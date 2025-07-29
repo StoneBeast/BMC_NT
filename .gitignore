@@ -1,0 +1,5 @@
+CM3_driver
+.vscode
+project/*
+!project/BMC_NT.uvoptx
+!project/BMC_NT.uvprojx
