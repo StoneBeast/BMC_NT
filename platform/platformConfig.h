@@ -13,6 +13,19 @@ extern uint32_t SystemCoreClock;
 
 #define platformCPU_CLOCK_HZ                       ( SystemCoreClock )
 
+#define IPMI_I2C I2C1
+#define SENSOR_I2C I2C2
+
+#define IPMI_I2C_RCC RCC_APB1Periph_I2C1
+#define IPMI_I2C_PORT GPIOB
+#define IPMI_I2C_SDA GPIO_Pin_7
+#define IPMI_I2C_SCL GPIO_Pin_6
+
+#define SENSOR_I2C_RCC RCC_APB1Periph_I2C2
+#define SENSOR_I2C_PORT GPIOB
+#define SENSOR_I2C_SDA GPIO_Pin_11
+#define SENSOR_I2C_SCL GPIO_Pin_10
+
 #ifdef PLATFORM_ST
     #define PLATFORM_WWDG_IRQHandler            WWDG_IRQHandler
     #define PLATFORM_PVD_IRQHandler             PVD_IRQHandler

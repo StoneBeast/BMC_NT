@@ -12,6 +12,5 @@
 #include "task.h"
 
 #define PRINTF(...) printf(__VA_ARGS__)
-void delay_ms(uint32_t ms);
 
 #endif // !__PLATFORM_H

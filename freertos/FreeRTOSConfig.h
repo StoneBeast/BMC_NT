@@ -85,5 +85,7 @@ NVIC value of 255. */
 #define xPortPendSVHandler PendSV_Handler
 #define xPortSysTickHandler SysTick_Handler
 
+#define configTASK_NOTIFICATION_ARRAY_ENTRIES 2
+
 #endif /* FREERTOS_CONFIG_H */
 

@@ -337,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F10X_HD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\user;..\platform;..\platform\inc;..\driver\FWLib\inc;..\driver\CMSIS;..\freertos\include;..\freertos\portable\RVDS\ARM_CM3;..\freertos</IncludePath>
+              <IncludePath>..\user;..\platform;..\platform\inc;..\driver\FWLib\inc;..\driver\CMSIS;..\freertos\include;..\freertos\portable\RVDS\ARM_CM3;..\freertos;..\ipmi</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -551,6 +551,11 @@
               <FileType>1</FileType>
               <FilePath>..\platform\src\uart.c</FilePath>
             </File>
+            <File>
+              <FileName>i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\platform\src\i2c.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -605,6 +610,21 @@
               <FileName>port.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\freertos\portable\RVDS\ARM_CM3\port.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>IPMI</GroupName>
+          <Files>
+            <File>
+              <FileName>ipmi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ipmi\ipmi.c</FilePath>
+            </File>
+            <File>
+              <FileName>ipmi_protocol.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ipmi\ipmi_protocol.c</FilePath>
             </File>
           </Files>
         </Group>
