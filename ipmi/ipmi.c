@@ -9,8 +9,10 @@
 
 #include "platform.h"
 #include "ipmi.h"
+#include "ipmi_protocol.h"
 
 void bmc_init(void)
 {
     init_ipmi_i2c(BMC_ADDR);
+    init_ipmi_protocol();
 }

@@ -2,6 +2,7 @@
 #include "platform.h"
 #include "ipmi_protocol.h"
 #include "task.h"
+#include "message_buffer.h"
 
 /**
   * @brief  This function handles NMI exception.
@@ -123,10 +124,12 @@ void DMA1_Channel6_IRQHandler(void)
         DMA_Cmd(DMA1_Channel6, DISABLE);
         DMA_SetCurrDataCounter(DMA1_Channel6, IPMI_PROTOCOL_MAX_LEN);
 
-        vTaskNotifyGiveIndexedFromISR(bmc_task_handle, 1, &xHigherPriorityTaskWoken);
+        vTaskNotifyGiveIndexedFromISR(bmc_task_handle, IPMI_SEND_CMP_BIT, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
+
+extern MessageBufferHandle_t req_msgBuffer;
 
 void DMA1_Channel7_IRQHandler(void)
 {
@@ -139,7 +142,7 @@ void DMA1_Channel7_IRQHandler(void)
         I2C_it_switch(1);
         I2C_dma_switch(0);
 
-        vTaskNotifyGiveIndexedFromISR(bmc_task_handle, 0, &xHigherPriorityTaskWoken);
+        xMessageBufferSendFromISR(req_msgBuffer, ipmi_recv_buf, IPMI_PROTOCOL_MAX_LEN, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }

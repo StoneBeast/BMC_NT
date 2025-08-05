@@ -3,7 +3,7 @@
  * @Date         : 2025-07-29 14:33:46
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-04 18:24:57
+ * @LastEditTime : 2025-08-05 16:37:49
  * @Description  : 
  */
 #include "platform.h"
@@ -26,11 +26,11 @@ int main(void)
 {
     BaseType_t ret;
 
-    bmc_init();
-
     init_gpio();
     init_uart();
-    
+
+    bmc_init();
+
     ret = xTaskCreate(blink_task_func, "blink", 128, NULL, 1, NULL);
     if (ret != pdPASS) {
         PRINTF("blink create err\r\n");
@@ -82,7 +82,7 @@ static void bmc_task_func(void *arg)
 #else   // !0
         PRINTF("send start\r\n");
 
-        ret = ipmi_msg_send(0x30, temp_send, 500);
+        ret = ipmi_request(0x30, 0x01, temp_send, IPMI_PROTOCOL_DATA_MAX_LEN, 2000, msg);
 
         if (ret == IPMI_ERR_OK) {
             PRINTF("recv ok\r\n");
@@ -98,6 +98,14 @@ static void bmc_task_func(void *arg)
         else if (ret == IPMI_ERR_NO_DEVICE) {
             PRINTF("no device, already reset\r\n");
         }
+        else if (ret == IPMI_ERR_MSG_ERROR) {
+            PRINTF("message error\r\n");
+        }
+        else if (ret == IPMI_ERR_RES_TIMEOUT) {
+            PRINTF("response timeout\r\n");
+        }
+
+        PRINTF("\r\n");
 #endif  // !0
 
         vTaskDelay(5000);
