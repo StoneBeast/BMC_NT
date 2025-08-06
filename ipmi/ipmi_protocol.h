@@ -20,7 +20,7 @@
 #define IPMI_PROTOCOL_MSG_CHK_LEN           1
 
 void init_ipmi_protocol(void);
-int ipmi_request(uint8_t addr, uint8_t code, const uint8_t *msg, uint16_t msg_len, uint32_t timeout_ms, uint8_t *req_buf);
+int ipmi_request(uint8_t addr, uint8_t code, const uint8_t *msg, uint16_t msg_len, uint32_t timeout_ms, uint8_t *const req_buf);
 int check_msg(const uint8_t *msg);
 // int ipmi_msg_send(uint8_t addr, uint8_t type, uint8_t code, const uint8_t* msg, uint16_t msg_len, uint32_t timeout_ms);
 // int ipmi_msg_recv(uint8_t * const msg, uint32_t timeout_ms);

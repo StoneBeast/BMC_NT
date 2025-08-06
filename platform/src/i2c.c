@@ -156,6 +156,12 @@ uint8_t I2C_busy_status(void)
     return 0;
 }
 
+/***
+ * @brief I2C开始发送，这里使用的I2C外设是I2C1
+ * @param addr [uint8_t]        发送的目标地址
+ * @param data_buf [uint8_t*]   指向发送数据的指针
+ * @return [int]                发送成功返回I2C_ERR_OK，否则返回非正错误码
+ */
 int I2C_satrt_send(uint8_t addr, const uint8_t* data_buf)
 {
     uint32_t timeout = 5000;
@@ -166,6 +172,7 @@ int I2C_satrt_send(uint8_t addr, const uint8_t* data_buf)
 
     I2C_GenerateSTART(IPMI_I2C, ENABLE);
 
+    /* 判断总线是否被占用 */
     while (RESET == I2C_GetFlagStatus(IPMI_I2C, I2C_FLAG_SB)) {
         if (timeout == 0) {
             return I2C_ERR_SB;
@@ -184,9 +191,11 @@ int I2C_satrt_send(uint8_t addr, const uint8_t* data_buf)
 
     CLEAR_ADDRFLAG(IPMI_I2C);
 
+    /* 清空并将发送数据复制到发送使用的buffer中 */
     memset(ipmi_send_buf, 0, IPMI_PROTOCOL_MAX_LEN);
     memcpy(ipmi_send_buf, data_buf, IPMI_PROTOCOL_MAX_LEN);
 
+    /* 重置DMA计数，使能DMA */
     DMA_SetCurrDataCounter(DMA1_Channel6, IPMI_PROTOCOL_MAX_LEN);
     DMA_Cmd(DMA1_Channel6, ENABLE);
 

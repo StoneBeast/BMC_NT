@@ -4,7 +4,7 @@
  * @Date         : 2025-07-29 15:14:19
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-06 11:12:14
+ * @LastEditTime : 2025-08-06 16:22:06
  * @Description  : 
  */
 
@@ -13,6 +13,12 @@
 #include "task.h"
 #include <string.h>
 #include "message_buffer.h"
+
+/* 
+    IPMI Message Package
+    | LENGTH 32Byte   |                 |                    |      |                  |
+    | Msg Type(1Byte) | Msg Code(1Byte) | Data Length(1Byte) | Data | Check sum(1Byte) |
+*/
 
 // TODO: send和recv的接收策略需要进一步确认
 
@@ -35,7 +41,17 @@ void init_ipmi_protocol(void)
     req_msgBuffer = xMessageBufferCreate(IPMI_PROTOCOL_MAX_LEN+8);
 }
 
-int ipmi_request(uint8_t addr, uint8_t code, const uint8_t* msg, uint16_t msg_len, uint32_t timeout_ms, uint8_t * req_buf)
+/*** 
+ * @brief ipmi请求函数
+ * @param addr [uint8_t]        请求地址
+ * @param code [uint8_t]        请求代码
+ * @param msg [uint8_t*]        请求体
+ * @param msg_len [uint16_t]    请求体长度
+ * @param timeout_ms [uint32_t] 超时时间，单位ms
+ * @param req_buf [uint8_t *]   响应：1Byte长度+nByte响应体
+ * @return [int]                成功返回IPMI_ERR_OK或错误码
+ */
+int ipmi_request(uint8_t addr, uint8_t code, const uint8_t* msg, uint16_t msg_len, uint32_t timeout_ms, uint8_t *const req_buf)
 {
     int ret = 0;
     uint8_t temp_req_buf[IPMI_PROTOCOL_MAX_LEN] = {0};
@@ -58,6 +74,16 @@ int ipmi_request(uint8_t addr, uint8_t code, const uint8_t* msg, uint16_t msg_le
     return IPMI_ERR_RES_TIMEOUT;
 }
 
+/***
+ * @brief 发送ipmi消息
+ * @param addr [uint8_t]        目标地址
+ * @param type [uint8_t]        消息类型代码
+ * @param code [uint8_t]        消息功能码
+ * @param msg [uint8_t*]        消息体
+ * @param msg_len [uint16_t]    消息体长度
+ * @param timeout_ms [uint32_t] 超时时间，单位ms
+ * @return [int]                成功返回IPMI_ERR_OK或错误码
+ */
 static int ipmi_msg_send(uint8_t addr, uint8_t type, uint8_t code, const uint8_t* msg, uint16_t msg_len, uint32_t timeout_ms)
 {
     int ret = IPMI_ERR_OK;
@@ -143,6 +169,11 @@ SEND_END:
 //     return ret;
 // }
 
+/*** 
+ * @brief 校验消息是否有误
+ * @param msg [uint8_t*]    被校验的消息  
+ * @return [int]            0：校验通过
+ */
 int check_msg(const uint8_t* msg)
 {
     uint16_t sum = 0;
@@ -160,6 +191,11 @@ int check_msg(const uint8_t* msg)
 
 }
 
+/*** 
+ * @brief 向消息中直接添加校验码
+ * @param msg [uint8_t*]    指向消息的指针
+ * @return [void]
+ */
 static void get_chksum(uint8_t *msg)
 {
     uint16_t sum = 0;
