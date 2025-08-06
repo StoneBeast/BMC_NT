@@ -3,7 +3,7 @@
  * @Date         : 2025-07-29 14:33:46
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-06 13:57:38
+ * @LastEditTime : 2025-08-06 15:17:21
  * @Description  : 
  */
 #include "platform.h"
@@ -52,9 +52,9 @@ static void blink_task_func (void* arg)
 {
     while (1) {
         ledOn();
-        vTaskDelay(500);
+        vTaskDelay(pdMS_TO_TICKS(500));
         ledOff();
-        vTaskDelay(500);
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 
@@ -111,6 +111,6 @@ static void bmc_task_func(void *arg)
         OS_PRINTF("\r\n");
 #endif  // !0
 
-        vTaskDelay(5000);
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
