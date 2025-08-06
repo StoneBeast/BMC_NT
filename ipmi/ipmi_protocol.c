@@ -4,7 +4,7 @@
  * @Date         : 2025-07-29 15:14:19
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-05 17:04:47
+ * @LastEditTime : 2025-08-06 11:12:14
  * @Description  : 
  */
 
@@ -19,7 +19,6 @@
 #define RECV_FROM_MSG_BUFFER(p_data, wait_ms) \
     xMessageBufferReceive(req_msgBuffer, p_data, IPMI_PROTOCOL_MAX_LEN, pdMS_TO_TICKS(wait_ms));
 
-static int check_msg(const uint8_t *msg);
 static void get_chksum(uint8_t* msg);
 static int ipmi_msg_send(uint8_t addr, uint8_t type, uint8_t code, const uint8_t* msg, uint16_t msg_len, uint32_t timeout_ms);
 
@@ -52,10 +51,8 @@ int ipmi_request(uint8_t addr, uint8_t code, const uint8_t* msg, uint16_t msg_le
         return IPMI_ERR_RES_TIMEOUT;
 
     if (temp_req_buf[IPMI_PROTOCOL_MSG_CODE_OFFSET] == code) { /* 确认是当前请求的响应 */
-        if (check_msg(temp_req_buf) == 0) { /* 消息校验通过 */
-            memcpy(req_buf, &(temp_req_buf[IPMI_PROTOCOL_MSG_DATA_LEN_OFFSET]), (IPMI_PROTOCOL_MSG_DATA_LEN_LEN + temp_req_buf[IPMI_PROTOCOL_MSG_DATA_LEN_OFFSET]));
-            return IPMI_ERR_OK;
-        }
+        memcpy(req_buf, &(temp_req_buf[IPMI_PROTOCOL_MSG_DATA_LEN_OFFSET]), (IPMI_PROTOCOL_MSG_DATA_LEN_LEN + temp_req_buf[IPMI_PROTOCOL_MSG_DATA_LEN_OFFSET]));
+        return IPMI_ERR_OK;
     }
 
     return IPMI_ERR_RES_TIMEOUT;
@@ -146,7 +143,7 @@ SEND_END:
 //     return ret;
 // }
 
-static int check_msg(const uint8_t* msg)
+int check_msg(const uint8_t* msg)
 {
     uint16_t sum = 0;
     uint8_t i = 0;

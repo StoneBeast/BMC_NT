@@ -3,6 +3,7 @@
 #include "ipmi_protocol.h"
 #include "task.h"
 #include "message_buffer.h"
+#include "queue.h"
 
 /**
   * @brief  This function handles NMI exception.
@@ -130,10 +131,16 @@ void DMA1_Channel6_IRQHandler(void)
 }
 
 extern MessageBufferHandle_t req_msgBuffer;
+extern QueueHandle_t event_queue;
 
+/*** 
+ * @brief DMA1_channel7 中断处理函数，负责I2C1的DMA接收
+ * @return [void]
+ */
 void DMA1_Channel7_IRQHandler(void)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    int check_ret = 0;
 
     if (DMA_GetITStatus(DMA1_IT_TC7) != RESET) {
         /* 清除中断标志 */
@@ -142,7 +149,15 @@ void DMA1_Channel7_IRQHandler(void)
         I2C_it_switch(1);
         I2C_dma_switch(0);
 
-        xMessageBufferSendFromISR(req_msgBuffer, ipmi_recv_buf, IPMI_PROTOCOL_MAX_LEN, &xHigherPriorityTaskWoken);
+        check_ret = check_msg(ipmi_recv_buf);
+
+        if (check_ret == 0) {
+            if (ipmi_recv_buf[IPMI_PROTOCOL_MSG_TYPE_OFFSET] == IPMI_MSG_TYPE_RES) {
+                xMessageBufferSendFromISR(req_msgBuffer, ipmi_recv_buf, IPMI_PROTOCOL_MAX_LEN, &xHigherPriorityTaskWoken);
+            } else if (ipmi_recv_buf[IPMI_PROTOCOL_MSG_TYPE_OFFSET] == IPMI_MSG_TYPE_EVENT) {
+                xQueueSendFromISR(event_queue, &(ipmi_recv_buf[IPMI_PROTOCOL_MSG_DATA_OFFSET]), &xHigherPriorityTaskWoken);
+            }
+        }
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }

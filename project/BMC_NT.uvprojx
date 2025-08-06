@@ -626,6 +626,16 @@
               <FileType>1</FileType>
               <FilePath>..\ipmi\ipmi_protocol.c</FilePath>
             </File>
+            <File>
+              <FileName>ipmi_event.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ipmi\ipmi_event.c</FilePath>
+            </File>
+            <File>
+              <FileName>ipmi_sdr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ipmi\ipmi_sdr.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
