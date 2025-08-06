@@ -3,17 +3,22 @@
  * @Date         : 2025-08-05 18:37:42
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-06 10:41:23
+ * @LastEditTime : 2025-08-06 14:22:57
  * @Description  : 
  */
+
+#include "platform.h"
 
 #include "ipmi.h"
 #include "ipmi_event.h"
 
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "timers.h"
 
 QueueHandle_t event_queue;
+static TimerHandle_t event_handler_timer;
+static void event_handler_callback(TimerHandle_t xTimer);
 
 int init_ipmi_event(void)
 {
@@ -22,6 +27,8 @@ int init_ipmi_event(void)
     if (event_queue == NULL)
         return -1;
 
+    event_handler_timer = xTimerCreate("eve", 500, pdTRUE, (void *)0, event_handler_callback);
+    xTimerStart(event_handler_timer, 0);
     return 0;
 }
 
@@ -37,4 +44,14 @@ int get_event_item(ipmi_event *const event)
         return -1;
 
     return 0;
+}
+
+// DEBUG: 添加测试使用的事件处理函数
+static void event_handler_callback(TimerHandle_t xTimer)
+{
+    ipmi_event item;
+
+    if (get_event_item(&item) == 0) {
+        OS_PRINTF("event:\r\naddr: %#02x\r\nname: %s\r\n", item.addr, item.name);
+    }
 }
