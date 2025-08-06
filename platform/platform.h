@@ -10,7 +10,14 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
+
+extern SemaphoreHandle_t uart_mutex;
 
 #define PRINTF(...) printf(__VA_ARGS__)
+#define OS_PRINTF(...)                         \
+    xSemaphoreTake(uart_mutex, portMAX_DELAY); \
+    printf(__VA_ARGS__);                       \
+    xSemaphoreGive(uart_mutex);
 
 #endif // !__PLATFORM_H
