@@ -85,7 +85,7 @@ static void bmc_task_func(void *arg)
 #else   // !0
         OS_PRINTF("send start\r\n");
 
-        ret = ipmi_request(0x30, 0x01, temp_send, IPMI_PROTOCOL_DATA_MAX_LEN, 2000, msg);
+        ret = ipmi_request(0x82, 0x01, temp_send, IPMI_PROTOCOL_DATA_MAX_LEN, 2000, msg);
 
         if (ret == IPMI_ERR_OK) {
             OS_PRINTF("recv ok\r\n");

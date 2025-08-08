@@ -97,6 +97,18 @@ void I2C1_EV_IRQHandler(void)
     }
 }
 
+void I2C1_ER_IRQHandler(void)
+{
+    if (SET == I2C_GetITStatus(IPMI_I2C, I2C_IT_TIMEOUT)) {
+        PRINTF("timeout err\r\n");
+        I2C_ClearITPendingBit(IPMI_I2C, I2C_IT_TIMEOUT);
+    }
+    if (SET == I2C_GetITStatus(IPMI_I2C, I2C_IT_AF)) {
+        PRINTF("af err\r\n");
+        I2C_ClearITPendingBit(IPMI_I2C, I2C_IT_AF);
+    }
+}
+
 extern uint8_t ipmi_recv_buf[IPMI_PROTOCOL_MAX_LEN];
 extern TaskHandle_t bmc_task_handle;
 

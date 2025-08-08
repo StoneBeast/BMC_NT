@@ -76,6 +76,11 @@ static void __init_i2c(I2C_TypeDef* i2cx, uint8_t addr)
         NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
         NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
         NVIC_Init(&NVIC_InitStructure);
+
+        I2C_ITConfig(IPMI_I2C, I2C_IT_ERR, ENABLE);
+        NVIC_InitStructure.NVIC_IRQChannel = I2C1_ER_IRQn;
+        NVIC_Init(&NVIC_InitStructure);
+
     }
 
     I2C_Cmd(i2cx, ENABLE);              // 使能I2C2
