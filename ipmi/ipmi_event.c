@@ -28,6 +28,9 @@ int init_ipmi_event(void)
         return -1;
 
     event_handler_timer = xTimerCreate("eve", 500, pdTRUE, (void *)0, event_handler_callback);
+    if (event_handler_timer != NULL) {
+        PRINTF("create event_handler");
+    }
     xTimerStart(event_handler_timer, 0);
     return 0;
 }
@@ -52,6 +55,6 @@ static void event_handler_callback(TimerHandle_t xTimer)
     ipmi_event item;
 
     if (get_event_item(&item) == 0) {
-        OS_PRINTF("event:\r\naddr: %#02x\r\nname: %s\r\n", item.addr, item.name);
+        OS_PRINTF("event:\r\naddr: %#02x\r\nname: %s\r\n", item.ipmc_addr, item.sensor_name);
     }
 }

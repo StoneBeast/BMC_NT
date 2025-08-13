@@ -3,11 +3,12 @@
  * @Date         : 2025-07-29 14:33:46
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-06 15:17:21
+ * @LastEditTime : 2025-08-11 10:50:03
  * @Description  : 
  */
 #include "platform.h"
 #include "ipmi.h"
+#include "ipmi_sdr.h"
 
 // DEBUG
 #include "ipmi_protocol.h"
@@ -62,6 +63,7 @@ static void bmc_task_func(void *arg)
 {
     uint8_t msg[IPMI_PROTOCOL_MAX_LEN] = {0};
     int ret = 0;
+    ipmi_sdr *sdr = NULL;
     (void)arg;
 
     while(1) {
@@ -82,13 +84,16 @@ static void bmc_task_func(void *arg)
         //     I2C_reset();
         }
 
-#else   // !0
+#elif 0  // !0
         OS_PRINTF("send start\r\n");
 
-        ret = ipmi_request(0x82, 0x01, temp_send, IPMI_PROTOCOL_DATA_MAX_LEN, 2000, msg);
+        ret = ipmi_request(0x82, IPMI_MSG_CODE_GET_SDR, temp_send, 1, 2000, msg);
 
         if (ret == IPMI_ERR_OK) {
-            OS_PRINTF("recv ok\r\n");
+            OS_PRINTF("recv ok, next id: %#02x\r\n", msg[1]);
+            sdr = (ipmi_sdr*)(&(msg[2]));
+            OS_PRINTF("addr: %#02x, no: %d, sensor_type: %#02x, signed: %d\r\n", sdr->ipmc_addr, sdr->sensor_no, sdr->sensor_type, sdr->is_signed);
+            OS_PRINTF("unit: %#02x, namelen: %d, name: %s\r\n", sdr->unit_code, sdr->name_len, sdr->sensor_name);
         } 
         else if (ret == IPMI_ERR_TIMEOUT){
             OS_PRINTF("recv timeout\r\n");
@@ -109,8 +114,10 @@ static void bmc_task_func(void *arg)
         }
 
         OS_PRINTF("\r\n");
+#else
+        get_all_sdr(0x82);
 #endif  // !0
 
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }

@@ -52,10 +52,10 @@ void init_ipmi_protocol(void)
  * @param msg [uint8_t*]        请求体
  * @param msg_len [uint16_t]    请求体长度
  * @param timeout_ms [uint32_t] 超时时间，单位ms
- * @param req_buf [uint8_t *]   响应：1Byte长度+nByte响应体
+ * @param res_buf [uint8_t *]   响应：1Byte长度+nByte响应体
  * @return [int]                成功返回IPMI_ERR_OK或错误码
  */
-int ipmi_request(uint8_t addr, uint8_t code, const uint8_t* msg, uint16_t msg_len, uint32_t timeout_ms, uint8_t *const req_buf)
+int ipmi_request(uint8_t addr, uint8_t code, const uint8_t* msg, uint16_t msg_len, uint32_t timeout_ms, uint8_t *const res_buf)
 {
     int ret = 0;
     uint8_t temp_req_buf[IPMI_PROTOCOL_MAX_LEN] = {0};
@@ -71,7 +71,7 @@ int ipmi_request(uint8_t addr, uint8_t code, const uint8_t* msg, uint16_t msg_le
         return IPMI_ERR_RES_TIMEOUT;
 
     if (temp_req_buf[IPMI_PROTOCOL_MSG_CODE_OFFSET] == code) { /* 确认是当前请求的响应 */
-        memcpy(req_buf, &(temp_req_buf[IPMI_PROTOCOL_MSG_DATA_LEN_OFFSET]), (IPMI_PROTOCOL_MSG_DATA_LEN_LEN + temp_req_buf[IPMI_PROTOCOL_MSG_DATA_LEN_OFFSET]));
+        memcpy(res_buf, &(temp_req_buf[IPMI_PROTOCOL_MSG_DATA_LEN_OFFSET]), (IPMI_PROTOCOL_MSG_DATA_LEN_LEN + temp_req_buf[IPMI_PROTOCOL_MSG_DATA_LEN_OFFSET]));
         return IPMI_ERR_OK;
     }
 
@@ -97,7 +97,7 @@ static int ipmi_msg_send(uint8_t addr, uint8_t type, uint8_t code, const uint8_t
     uint8_t send_msg[IPMI_PROTOCOL_MAX_LEN] = {0};
 
     /* 判断msg */
-    if (msg == NULL || msg_len > IPMI_PROTOCOL_DATA_MAX_LEN) {
+    if (msg_len > IPMI_PROTOCOL_DATA_MAX_LEN) {
         return IPMI_ERR_MSG_ERROR;
     }
 
@@ -115,7 +115,8 @@ static int ipmi_msg_send(uint8_t addr, uint8_t type, uint8_t code, const uint8_t
     memcpy(&(send_msg[IPMI_PROTOCOL_MSG_TYPE_OFFSET]), &type, IPMI_PROTOCOL_MSG_TYPE_LEN);
     memcpy(&(send_msg[IPMI_PROTOCOL_MSG_CODE_OFFSET]), &code, IPMI_PROTOCOL_MSG_CODE_LEN);
     memcpy(&(send_msg[IPMI_PROTOCOL_MSG_DATA_LEN_OFFSET]), &msg_len, IPMI_PROTOCOL_MSG_DATA_LEN_LEN);
-    memcpy(&(send_msg[IPMI_PROTOCOL_MSG_DATA_OFFSET]), msg, msg_len);
+    if (msg != NULL)
+        memcpy(&(send_msg[IPMI_PROTOCOL_MSG_DATA_OFFSET]), msg, msg_len);
     /* 添加校验和 */
     get_chksum(send_msg);
 
