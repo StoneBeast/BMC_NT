@@ -21,6 +21,8 @@ void bmc_init(void)
     init_ret = init_ipmi_event();
     if (init_ret != 0)
         while(1);
+
+    init_ipmi_sdr();
 }
 
 // DEBUG: 测试函数，测试获取目标ipmc的所有sdr功能

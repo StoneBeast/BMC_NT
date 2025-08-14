@@ -556,6 +556,11 @@
               <FileType>1</FileType>
               <FilePath>..\platform\src\i2c.c</FilePath>
             </File>
+            <File>
+              <FileName>adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\platform\src\adc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -7,6 +7,7 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "uart.h"
+#include "adc.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
