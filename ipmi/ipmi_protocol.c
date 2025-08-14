@@ -127,7 +127,6 @@ static int ipmi_msg_send(uint8_t addr, uint8_t type, uint8_t code, const uint8_t
         goto SEND_END;
     } else if (i2c_ret == I2C_ERR_ADDR) {
         ret = IPMI_ERR_NO_DEVICE;
-        I2C_reset();
         goto SEND_END;
     }
 

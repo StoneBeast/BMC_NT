@@ -103,9 +103,14 @@ void I2C1_ER_IRQHandler(void)
         PRINTF("timeout err\r\n");
         I2C_ClearITPendingBit(IPMI_I2C, I2C_IT_TIMEOUT);
     }
-    if (SET == I2C_GetITStatus(IPMI_I2C, I2C_IT_AF)) {
+    else if (SET == I2C_GetITStatus(IPMI_I2C, I2C_IT_AF)) {
         PRINTF("af err\r\n");
         I2C_ClearITPendingBit(IPMI_I2C, I2C_IT_AF);
+        I2C_GenerateSTOP(IPMI_I2C, ENABLE);
+    }
+    else if (SET == I2C_GetITStatus(IPMI_I2C, I2C_IT_BERR)){
+        PRINTF("berr err\r\n");
+        I2C_ClearITPendingBit(IPMI_I2C, I2C_IT_BERR);
     }
 }
 

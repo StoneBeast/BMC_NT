@@ -211,7 +211,7 @@ int I2C_satrt_send(uint8_t addr, const uint8_t* data_buf)
 void I2C_reset(void)
 {
     // TODO: 需要根据不同原因，指定不同的防锁死的方法
-    I2C_GenerateSTOP(IPMI_I2C, ENABLE);
     I2C_SoftwareResetCmd(IPMI_I2C, ENABLE);
+    I2C_SoftwareResetCmd(IPMI_I2C, DISABLE);
     init_ipmi_i2c(BMC_ADDR);
 }
