@@ -4,6 +4,8 @@
 #include "task.h"
 #include "message_buffer.h"
 #include "queue.h"
+#include "system_interface.h"
+#include <string.h>
 
 /**
   * @brief  This function handles NMI exception.
@@ -176,5 +178,27 @@ void DMA1_Channel7_IRQHandler(void)
             }
         }
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+}
+
+extern QueueHandle_t sys_req_queue;
+static sys_req_msg_t sys_req_msg = {.msg_len = 0};
+
+void USART1_IRQHandler(void)
+{
+    uint8_t rc = 0;
+    BaseType_t is_yield = pdFALSE;
+
+    if (SET == USART_GetITStatus(USART1, USART_IT_RXNE)) {
+        rc = USART_ReceiveData(USART1);
+        if (sys_req_msg.msg_len < SYS_INTERFACE_MSG_MAX_LEN) {
+            sys_req_msg.msg[sys_req_msg.msg_len] = rc;
+            sys_req_msg.msg_len++;
+        }
+    }
+    else if (SET == USART_GetITStatus(USART1, USART_IT_IDLE)) { /* idel 中断，接收完成？ */
+        xQueueSendFromISR(sys_req_queue, &sys_req_msg, &is_yield);
+        memset(&sys_req_msg, 0, sizeof(sys_req_msg));
+        portYIELD_FROM_ISR(is_yield);
     }
 }

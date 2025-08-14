@@ -641,6 +641,11 @@
               <FileType>1</FileType>
               <FilePath>..\ipmi\ipmi_sdr.c</FilePath>
             </File>
+            <File>
+              <FileName>system_interface.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ipmi\system_interface.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
