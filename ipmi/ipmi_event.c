@@ -3,7 +3,7 @@
  * @Date         : 2025-08-05 18:37:42
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-06 14:22:57
+ * @LastEditTime : 2025-08-14 10:18:44
  * @Description  : 
  */
 
@@ -47,6 +47,11 @@ int get_event_item(ipmi_event *const event)
         return -1;
 
     return 0;
+}
+
+void add_event(const ipmi_event* event)
+{
+    xQueueSend(event_queue, event, 0);
 }
 
 // DEBUG: 添加测试使用的事件处理函数
