@@ -25,6 +25,7 @@
     FIXME:  接收时，主机因故不产生stop标志，导致总线锁死，clk线被一直拉低。之后即使总线复位，但仍不产生
             stop位，会导致接收端继续阻塞，因为busy被置位，这时的解决方法目前只发现重置接收端的I2C控制器
 */
+// TODO: busy次数到达设定值之后最好进行外设复位，防止总线无限锁死。
 
 #define RECV_FROM_MSG_BUFFER(p_data, wait_ms) \
     xMessageBufferReceive(req_msgBuffer, p_data, IPMI_PROTOCOL_MAX_LEN, pdMS_TO_TICKS(wait_ms));
