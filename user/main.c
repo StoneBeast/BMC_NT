@@ -3,7 +3,7 @@
  * @Date         : 2025-07-29 14:33:46
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-11 10:50:03
+ * @LastEditTime : 2025-08-14 16:56:52
  * @Description  : 
  */
 #include "platform.h"
@@ -29,7 +29,7 @@ int main(void)
     BaseType_t ret;
 
     init_gpio();
-    init_uart();
+    init_debug_usart();
 
     bmc_init();
 
