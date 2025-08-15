@@ -3,12 +3,15 @@
  * @Date         : 2025-07-29 14:33:46
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-14 16:42:17
+ * @LastEditTime : 2025-08-15 14:15:23
  * @Description  : 
  */
 #include "platform.h"
 #include <stdio.h>
+#include <string.h>
+#include "system_interface.h"
 
+static uint8_t send_buffer[SYSTEM_RESPONSE_LEN] = {0};
 static void __init_uart(USART_TypeDef* usartx);
 
 void init_sys_usart(void)
@@ -79,11 +82,55 @@ static void __init_uart(USART_TypeDef* usartx)
         // TODO: 之后尽量不使用idel中断，意外因素较多，不可控
         USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
         USART_ITConfig(USART1, USART_IT_IDLE, ENABLE);
+
+        DMA_InitTypeDef DMA_InitStructure;
+        DMA_DeInit(DMA1_Channel4);  // USART1_TX 使用 DMA1 通道4
+        
+        DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(USART1->DR);  // 外设地址
+        DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)send_buffer;        // 内存地址
+        DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;                   // 内存到外设
+        DMA_InitStructure.DMA_BufferSize = SYSTEM_RESPONSE_LEN;              // 传输数据量
+        DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;     // 外设地址固定
+        DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;              // 内存地址递增
+        DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // 8位
+        DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         // 8位
+        DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                       // 普通模式(非循环)
+        DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;               // 中优先级
+        DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                        // 禁用内存到内存
+        DMA_Init(DMA1_Channel4, &DMA_InitStructure);
+
+        USART_DMACmd(usartx, USART_DMAReq_Tx, ENABLE);
     }
 
     USART_Cmd(usartx, ENABLE);
 }
 
+void usart_start_send(const uint8_t *msg)
+{
+    DMA_Cmd(DMA1_Channel4, DISABLE);
+    DMA_SetCurrDataCounter(DMA1_Channel4, SYSTEM_RESPONSE_LEN);
+
+    memcpy(send_buffer, msg, SYSTEM_RESPONSE_LEN);
+    DMA_Cmd(DMA1_Channel4, ENABLE);
+}
+
+/*** 
+ * @brief 查询而非阻塞，可配合外部使用 os_delay
+ * @return [uin8_t] 0未完成/1完成
+ */
+uint8_t usart_is_send_complate(void)
+{
+    if (DMA_GetFlagStatus(DMA1_FLAG_TC4) == RESET)
+        return 0;
+
+    /* 清除传输完成标志 */
+    DMA_ClearFlag(DMA1_FLAG_TC4);
+
+    /* 禁用DMA通道 */
+    DMA_Cmd(DMA1_Channel4, DISABLE);
+
+    return 1;
+}
 
 // printf的重定向到USART2
 #pragma import(__use_no_semihosting)
