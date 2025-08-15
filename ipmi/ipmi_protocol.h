@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define IPMI_SEND_CMP_BIT                   (0)
+// #define IPMI_SEND_CMP_BIT                   (0)
 
 #define IPMI_PROTOCOL_MAX_LEN               32
 #define IPMI_PROTOCOL_FORMAT_LEN            3
@@ -38,6 +38,9 @@ int check_msg(const uint8_t *msg);
 #define IPMI_MSG_TYPE_REQ                   (1)
 #define IPMI_MSG_TYPE_RES                   (2)
 #define IPMI_MSG_TYPE_EVENT                 (3)
+
+#define BIT_SET(b)                          ((uint8_t)(1<<b))
+#define IPMI_SEND_CMP_BIT                   BIT_SET(1)
 
 
 #endif // !__IPMI_PROTOCOL_H

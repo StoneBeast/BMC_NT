@@ -13,6 +13,7 @@
 #include "task.h"
 #include <string.h>
 #include "message_buffer.h"
+#include "event_groups.h"
 
 /* 
     IPMI Message Package
@@ -35,6 +36,7 @@ static int ipmi_msg_send(uint8_t addr, uint8_t type, uint8_t code, const uint8_t
 
 
 MessageBufferHandle_t req_msgBuffer;
+EventGroupHandle_t ipmi_protocol_evg;
 extern uint8_t ipmi_recv_buf[IPMI_PROTOCOL_MAX_LEN];
 
 /*** 
@@ -44,6 +46,7 @@ extern uint8_t ipmi_recv_buf[IPMI_PROTOCOL_MAX_LEN];
 void init_ipmi_protocol(void)
 {
     req_msgBuffer = xMessageBufferCreate(IPMI_PROTOCOL_MAX_LEN+8);
+    ipmi_protocol_evg = xEventGroupCreate();
 }
 
 /*** 
@@ -106,6 +109,7 @@ static int ipmi_msg_send(uint8_t addr, uint8_t type, uint8_t code, const uint8_t
     while (1 == I2C_busy_status()) {
         if (try_count > IPMB_BUSY_TRY_COUNT) {
             ret = IPMI_ERR_BUSY;
+            I2C_reset();
             goto SEND_END;
         }
         vTaskDelay(pdMS_TO_TICKS(IPMB_BUSY_TRY_INTERVAL_MS));
@@ -130,8 +134,8 @@ static int ipmi_msg_send(uint8_t addr, uint8_t type, uint8_t code, const uint8_t
         goto SEND_END;
     }
 
-    send_ret = ulTaskNotifyTakeIndexed(IPMI_SEND_CMP_BIT, pdTRUE, pdMS_TO_TICKS(timeout_ms));
-    if (send_ret != pdTRUE) {
+    send_ret = xEventGroupWaitBits(ipmi_protocol_evg, IPMI_SEND_CMP_BIT, pdTRUE, pdFALSE, pdMS_TO_TICKS(timeout_ms));
+    if (send_ret != IPMI_SEND_CMP_BIT) {
         ret = IPMI_ERR_TIMEOUT;
     }
 

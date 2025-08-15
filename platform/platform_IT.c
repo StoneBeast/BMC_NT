@@ -5,6 +5,7 @@
 #include "message_buffer.h"
 #include "queue.h"
 #include "system_interface.h"
+#include "event_groups.h"
 #include <string.h>
 
 /**
@@ -117,7 +118,8 @@ void I2C1_ER_IRQHandler(void)
 }
 
 extern uint8_t ipmi_recv_buf[IPMI_PROTOCOL_MAX_LEN];
-extern TaskHandle_t bmc_task_handle;
+// extern TaskHandle_t bmc_task_handle;
+extern EventGroupHandle_t ipmi_protocol_evg;
 
 void DMA1_Channel6_IRQHandler(void)
 {
@@ -144,7 +146,7 @@ void DMA1_Channel6_IRQHandler(void)
         DMA_Cmd(DMA1_Channel6, DISABLE);
         DMA_SetCurrDataCounter(DMA1_Channel6, IPMI_PROTOCOL_MAX_LEN);
 
-        vTaskNotifyGiveIndexedFromISR(bmc_task_handle, IPMI_SEND_CMP_BIT, &xHigherPriorityTaskWoken);
+        xEventGroupSetBitsFromISR(ipmi_protocol_evg, IPMI_SEND_CMP_BIT, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
