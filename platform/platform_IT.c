@@ -186,17 +186,23 @@ static sys_req_msg_t sys_req_msg = {.msg_len = 0};
 
 void USART1_IRQHandler(void)
 {
+    uint32_t temp_clear = 0;
     uint8_t rc = 0;
     BaseType_t is_yield = pdFALSE;
 
     if (SET == USART_GetITStatus(USART1, USART_IT_RXNE)) {
         rc = USART_ReceiveData(USART1);
-        if (sys_req_msg.msg_len < SYS_INTERFACE_MSG_MAX_LEN) {
+        if (sys_req_msg.msg_len < SYSTEM_REQUEST_MAX_LEN) {
             sys_req_msg.msg[sys_req_msg.msg_len] = rc;
             sys_req_msg.msg_len++;
         }
     }
     else if (SET == USART_GetITStatus(USART1, USART_IT_IDLE)) { /* idel 中断，接收完成？ */
+        /* 清除idel中断 */
+        temp_clear = USART1->SR;
+        temp_clear = USART1->DR;
+        (void)temp_clear;
+        
         xQueueSendFromISR(sys_req_queue, &sys_req_msg, &is_yield);
         memset(&sys_req_msg, 0, sizeof(sys_req_msg));
         portYIELD_FROM_ISR(is_yield);

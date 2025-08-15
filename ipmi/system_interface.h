@@ -3,7 +3,9 @@
 
 #include "platform.h"
 
-#define SYS_INTERFACE_MSG_MAX_LEN   (32)
+#define SYSTEM_REQUEST_MAX_COUNT    (2)
+#define SYSTEM_REQUEST_MAX_LEN      (32)
+#define SYSTEM_RESPONSE_LEN         (256u)
 
 #define SYS_MSG_TYPE_OFFSET     0
 #define SYS_MSG_TYPE_LENGTH     1
@@ -23,7 +25,9 @@
 
 typedef struct {
     uint16_t msg_len;
-    uint8_t msg[SYS_INTERFACE_MSG_MAX_LEN];
+    uint8_t msg[SYSTEM_REQUEST_MAX_LEN];
 }sys_req_msg_t;
+
+uint8_t init_sysInterface(void);
 
 #endif // !__SYSTEM_INTERFACE_H

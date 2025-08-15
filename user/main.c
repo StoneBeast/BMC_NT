@@ -3,11 +3,12 @@
  * @Date         : 2025-07-29 14:33:46
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-14 16:56:52
+ * @LastEditTime : 2025-08-15 09:45:28
  * @Description  : 
  */
 #include "platform.h"
 #include "ipmi.h"
+#include "system_interface.h"
 #include "ipmi_sdr.h"
 
 // DEBUG
@@ -32,6 +33,7 @@ int main(void)
     init_debug_usart();
 
     bmc_init();
+    init_sysInterface();
 
     uart_mutex = xSemaphoreCreateMutex();
 
