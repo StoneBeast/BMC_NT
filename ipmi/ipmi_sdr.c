@@ -165,19 +165,9 @@ void update_sensor(void)
         sdr_list[i].sdr.read_data = data;
         
         PRINTF("id: %d, data: %d\r\n", sdr_list[i].sdr_id, data);
-
+        
         /* 是否超出阈值 */
-        if (sdr_list[i].sdr.is_signed == 0) { /* 无符号 */
-            if ((data < sdr_list[i].sdr.lower_threshold) || (data > sdr_list[i].sdr.higher_threshold)) {
-                /* 超出阈值，产生事件 */
-                add_event(&(sdr_list[i].sdr));
-            }
-        } else { /* 有符号 */
-            if (((short)data < (short)(sdr_list[i].sdr.lower_threshold)) || ((short)data > (short)(sdr_list[i].sdr.higher_threshold))) {
-                /* 超出阈值，产生事件 */
-                add_event(&(sdr_list[i].sdr));
-            }
-        }
+        is_over_value(&(sdr_list[i].sdr));
     }
     
     PRINTF("\r\n");

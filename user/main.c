@@ -3,7 +3,7 @@
  * @Date         : 2025-07-29 14:33:46
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-15 09:45:28
+ * @LastEditTime : 2025-08-18 14:25:45
  * @Description  : 
  */
 #include "platform.h"
@@ -22,7 +22,6 @@ static uint8_t temp_send[32] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 
 static void blink_task_func (void* arg);
 static void bmc_task_func(void *arg);
 
-TaskHandle_t bmc_task_handle;
 SemaphoreHandle_t uart_mutex;
 
 int main(void)
@@ -41,7 +40,7 @@ int main(void)
     if (ret != pdPASS) {
         PRINTF("blink create err\r\n");
     }
-    ret = xTaskCreate(bmc_task_func, "bmc", 512, NULL, 4, &bmc_task_handle);
+    ret = xTaskCreate(bmc_task_func, "bmc", 512, NULL, 4, NULL);
     if (ret != pdPASS) {
         PRINTF("bmc create err\r\n");
     }
@@ -120,6 +119,6 @@ static void bmc_task_func(void *arg)
         get_all_sdr(0x82);
 #endif  // !0
 
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
