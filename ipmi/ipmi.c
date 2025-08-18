@@ -50,6 +50,27 @@ uint8_t scan_card(uint8_t *const card_list)
     return card_count;
 }
 
+uint8_t get_card_sdr_by_id(uint8_t addr, uint8_t id, ipmi_sdr *const sdr)
+{
+    uint8_t next_id = 0;
+    int ret = IPMI_ERR_OK;
+    uint8_t res_body[IPMI_PROTOCOL_DATA_MAX_LEN + 1] = {0};
+
+    if (addr == BMC_ADDR) {
+        next_id = get_sdr_by_id(id, sdr);
+    } else {
+        ret = ipmi_request(addr, IPMI_MSG_CODE_GET_SDR, &id, 1, 2000, res_body);
+        if (ret == IPMI_ERR_OK) {
+            next_id = res_body[1];
+            memcpy(sdr, (ipmi_sdr*)(&(res_body[2])), sizeof(ipmi_sdr));
+        } else if (ret == IPMI_ERR_BUSY) {
+            I2C_reset();
+        }
+    }
+
+    return next_id;
+}
+
 // DEBUG: 测试函数，测试获取目标ipmc的所有sdr功能
 void get_all_sdr(uint8_t addr)
 {

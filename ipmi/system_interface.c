@@ -3,7 +3,7 @@
  * @Date         : 2025-08-14 13:48:04
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-15 14:30:55
+ * @LastEditTime : 2025-08-18 17:46:09
  * @Description  : 
  */
 #include "system_interface.h"
@@ -29,7 +29,8 @@
 static uint8_t check_sys_req(const uint8_t* msg);
 static void get_chksum(uint8_t * const msg);
 static void sys_request_handler_task_func(void* arg);
-static int get_device_list_handler(uint8_t *const res_body);
+static uint16_t get_device_list_handler(uint8_t *const res_body);
+static uint16_t get_sensor_list_handler(uint8_t target_addr, uint8_t *const res_body);
 static void sys_response(const uint8_t* msg);
 QueueHandle_t sys_req_queue;
 
@@ -59,9 +60,7 @@ static void sys_request_handler_task_func(void *arg)
     sys_req_msg_t recv_req;
     BaseType_t recv_ret = pdFALSE;
     uint8_t res_msg[SYSTEM_RESPONSE_LEN] = {0};
-    // DEBUG:
-    // uint8_t res_msg[SYSTEM_RESPONSE_LEN] = "Recv Request, This is Responst.\r\n";
-    int res_ready = IPMI_ERR_OK;
+    uint16_t res_body_len = 0;
 
     while (1) {
         recv_ret = xQueueReceive(sys_req_queue, &recv_req, portMAX_DELAY);
@@ -71,7 +70,6 @@ static void sys_request_handler_task_func(void *arg)
             OS_PRINTF("recv sys_req\r\n");
         }
         
-        // TODO: check request
         if (0 != check_sys_req(recv_req.msg)) {
             OS_PRINTF("check error\r\n");
             continue;
@@ -84,9 +82,10 @@ static void sys_request_handler_task_func(void *arg)
         switch (recv_req.msg[SYS_MSG_CODE_OFFSET])
         {
         case SYS_CMD_DEVICE_LIST:
-            res_ready = get_device_list_handler(&(res_msg[SYS_MSG_LEN_OFFSET]));
+            res_body_len = get_device_list_handler(&(res_msg[SYS_MSG_DATA_OFFSET]));
             break;
         case SYS_CMD_DEVICE_SENSOR:
+            res_body_len = get_sensor_list_handler(recv_req.msg[SYS_MSG_DATA_OFFSET], &(res_msg[SYS_MSG_DATA_OFFSET]));
             break;
         case SYS_CMD_GET_EVENT:
             break;
@@ -94,7 +93,8 @@ static void sys_request_handler_task_func(void *arg)
             break;
         }
 
-        if (res_ready == IPMI_ERR_OK) {
+        if (res_body_len != 0) {
+            memcpy(&(res_msg[SYS_MSG_LEN_OFFSET]), &res_body_len, SYS_MSG_LEN_LENGTH);
             res_msg[SYS_MSG_CODE_OFFSET] = recv_req.msg[SYS_MSG_CODE_OFFSET];
             get_chksum(res_msg);
             sys_response(res_msg);
@@ -103,7 +103,7 @@ static void sys_request_handler_task_func(void *arg)
     }
 }
 
-static int get_device_list_handler(uint8_t *const res_body)
+static uint16_t get_device_list_handler(uint8_t *const res_body)
 {
     uint8_t device_count = 0;
     uint16_t res_len = 0;
@@ -117,7 +117,51 @@ static int get_device_list_handler(uint8_t *const res_body)
     // DEBUG:
     OS_PRINTF("device_count: %d\r\n", device_count);
 
-    return IPMI_ERR_OK;
+    return res_len;
+}
+
+static uint16_t get_sensor_list_handler(uint8_t target_addr, uint8_t *const res_body)
+{
+    uint16_t res_body_len = 0;
+    uint16_t p = 1;
+    ipmi_sdr sdr;
+    uint8_t id = 0;
+    uint8_t sdr_num = 0;
+
+    do
+    {
+        id = get_card_sdr_by_id(target_addr, id, &sdr);
+
+        /* no 1Byte */
+        res_body[p++] = sdr.sensor_no;
+        /* signed 1Byte */
+        res_body[p++] = sdr.is_signed;
+        /* raw data 2Byte */
+        memcpy(&(res_body[p]), &(sdr.read_data), 2);
+        p += 2;
+        /* M 2Byte, K 2Byte */
+        memcpy(&(res_body[p]), &(sdr.argM), 2);
+        p += 2;
+        memcpy(&(res_body[p]), &(sdr.argK), 2);
+        p += 2;
+        /* unit 1Byte */
+        res_body[p++] = sdr.unit_code;
+        /* name len 1Byte */
+        res_body[p++] = sdr.name_len;
+        /* sensor name */
+        memcpy(&(res_body[p]), sdr.sensor_name, sdr.name_len);
+        p += sdr.name_len;
+
+        sdr_num += 1;
+
+        OS_PRINTF("addr: %#02x, no: %d, sensor_type: %#02x, signed: %d\r\n", sdr.ipmc_addr, sdr.sensor_no, sdr.sensor_type, sdr.is_signed);
+        OS_PRINTF("unit: %#02x, namelen: %d, name: %s\r\n", sdr.unit_code, sdr.name_len, sdr.sensor_name);
+    } while (id != 0);
+    
+    res_body[0] = sdr_num;
+    res_body_len = p;
+
+    return res_body_len;
 }
 
 static uint8_t check_sys_req(const uint8_t* msg)

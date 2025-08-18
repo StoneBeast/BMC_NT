@@ -2,6 +2,7 @@
 #define __IPMI_H
 
 #include <stdint.h>
+#include "ipmi_sdr.h"
 
 #define BMC_ADDR                0x20
 #define IPMC_BASE_ADDR          0x40
@@ -18,6 +19,7 @@
 
 void bmc_init(void);
 uint8_t scan_card(uint8_t *const card_list);
+uint8_t get_card_sdr_by_id(uint8_t addr, uint8_t id, ipmi_sdr *const sdr);
 void get_all_sdr(uint8_t addr);
 
 #endif // !__IPMI_H

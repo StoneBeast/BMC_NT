@@ -116,7 +116,7 @@ static void bmc_task_func(void *arg)
 
         OS_PRINTF("\r\n");
 #else
-        get_all_sdr(0x82);
+        // get_all_sdr(0x82);
 #endif  // !0
 
         vTaskDelay(pdMS_TO_TICKS(1000));
