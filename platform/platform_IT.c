@@ -88,9 +88,11 @@ void I2C1_EV_IRQHandler(void)
         /* 检测到addr，方向为接收，关闭中断，开启dma，准备接收数据 */
         if (RESET == I2C_GetFlagStatus(IPMI_I2C, I2C_FLAG_TRA)) {
             I2C_it_switch(0);
+            I2C_AcknowledgeConfig(IPMI_I2C, ENABLE);
             I2C_dma_switch(1);
         } else {    /* 方向为发送 */
             I2C_it_switch(0);
+            I2C_AcknowledgeConfig(IPMI_I2C, DISABLE);
             DMA_Cmd(DMA1_Channel6, ENABLE);
         }
     }
@@ -143,6 +145,7 @@ void DMA1_Channel6_IRQHandler(void)
 
         /* 打开中断 */
         I2C_it_switch(1);
+        I2C_AcknowledgeConfig(IPMI_I2C, ENABLE);
         DMA_Cmd(DMA1_Channel6, DISABLE);
         DMA_SetCurrDataCounter(DMA1_Channel6, IPMI_PROTOCOL_MAX_LEN);
 
