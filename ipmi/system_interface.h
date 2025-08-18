@@ -15,6 +15,7 @@
 #define SYS_MSG_LEN_LENGTH      2
 #define SYS_MSG_DATA_OFFSET     4
 #define SYS_MSG_DATA_LENGTH     1
+#define SYS_MSG_RES_CHK_OFFSET (SYSTEM_RESPONSE_LEN-1)
 #define SYS_MSG_FORMAT_LENGTH   5
 
 #define SYS_MSG_TYPE_REQ        0x01

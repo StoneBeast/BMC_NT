@@ -3,7 +3,7 @@
  * @Date         : 2025-07-29 15:15:04
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-06 10:51:32
+ * @LastEditTime : 2025-08-18 11:02:20
  * @Description  : 
  */
 
@@ -11,6 +11,7 @@
 #include "ipmi.h"
 #include "ipmi_protocol.h"
 #include "ipmi_event.h"
+#include <string.h>
 
 void bmc_init(void)
 {
@@ -25,12 +26,36 @@ void bmc_init(void)
     init_ipmi_sdr();
 }
 
+uint8_t scan_card(uint8_t *const card_list)
+{
+    uint8_t i = 0;
+    uint8_t card_count = 0;
+    int ret = IPMI_ERR_OK;
+    uint8_t res_body[IPMI_PROTOCOL_DATA_MAX_LEN] = {0};
+    uint8_t card_addr = 0;
+
+    /* 先添加本机 */
+    card_list[card_count] = BMC_ADDR;
+    card_count += 1;
+
+    for (i = 0; i < SLOT_COUNT; i++) {
+        card_addr = VPX_IPMB_ADDR((IPMC_BASE_ADDR + 1 + i));
+        ret = ipmi_request(card_addr, IPMI_MSG_CODE_SCAN, NULL, 0, 2000, res_body);
+        if (ret == IPMI_ERR_OK) {
+            card_list[card_count] = card_addr;
+            card_count += 1;
+        }
+    }
+
+    return card_count;
+}
+
 // DEBUG: 测试函数，测试获取目标ipmc的所有sdr功能
 void get_all_sdr(uint8_t addr)
 {
     int ret = 0;
     uint8_t target_id = 0;
-    uint8_t res_body[IPMI_PROTOCOL_DATA_MAX_LEN] = {0};
+    uint8_t res_body[IPMI_PROTOCOL_DATA_MAX_LEN+1] = {0};
     ipmi_sdr *sdr = NULL;
     
     do {
@@ -40,6 +65,7 @@ void get_all_sdr(uint8_t addr)
             target_id = res_body[1];
             OS_PRINTF("recv ok, next id: %#02x\r\n", res_body[1]);
             sdr = (ipmi_sdr*)(&(res_body[2]));
+            is_over_value(sdr);
             OS_PRINTF("addr: %#02x, no: %d, sensor_type: %#02x, signed: %d\r\n", sdr->ipmc_addr, sdr->sensor_no, sdr->sensor_type, sdr->is_signed);
             OS_PRINTF("unit: %#02x, namelen: %d, name: %s\r\n", sdr->unit_code, sdr->name_len, sdr->sensor_name);
         } 
