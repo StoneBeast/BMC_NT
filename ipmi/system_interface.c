@@ -108,11 +108,11 @@ static uint16_t get_device_list_handler(uint8_t *const res_body)
     uint8_t device_count = 0;
     uint16_t res_len = 0;
 
-    device_count = scan_card(&(res_body[3]));
-    res_len = device_count+1;
+    device_count = scan_card(&(res_body[1]));
+    res_len = device_count;
 
-    memcpy(res_body, &res_len, SYS_MSG_LEN_LENGTH);
-    res_body[2] = device_count;
+    // memcpy(res_body, &res_len, SYS_MSG_LEN_LENGTH);
+    res_body[0] = device_count;
 
     // DEBUG:
     OS_PRINTF("device_count: %d\r\n", device_count);
