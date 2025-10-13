@@ -82,14 +82,18 @@ static void sys_request_handler_task_func(void *arg)
         switch (recv_req.msg[SYS_MSG_CODE_OFFSET])
         {
         case SYS_CMD_DEVICE_LIST:
+            OS_PRINTF("CMD: device list\r\n");
             res_body_len = get_device_list_handler(&(res_msg[SYS_MSG_DATA_OFFSET]));
             break;
         case SYS_CMD_DEVICE_SENSOR:
+            OS_PRINTF("CMD: device sensor\r\n");
             res_body_len = get_sensor_list_handler(recv_req.msg[SYS_MSG_DATA_OFFSET], &(res_msg[SYS_MSG_DATA_OFFSET]));
             break;
         case SYS_CMD_GET_EVENT:
+            OS_PRINTF("CMD: get event\r\n");
             break;
         default:
+            OS_PRINTF("CMD: unkonw\r\n");
             break;
         }
 
@@ -196,6 +200,8 @@ static void get_chksum(uint8_t * const msg)
 static void sys_response(const uint8_t* msg)
 {
     usart_start_send(msg);
+
+    OS_PRINTF("Response Sent \r\n");
 
     while (usart_is_send_complate() == 0)
         vTaskDelay(pdMS_TO_TICKS(5));
