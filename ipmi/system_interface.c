@@ -3,7 +3,7 @@
  * @Date         : 2025-08-14 13:48:04
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-10-20 11:30:02
+ * @LastEditTime : 2025-10-20 15:18:25
  * @Description  : 
  */
 #include "system_interface.h"
@@ -128,7 +128,6 @@ static uint16_t get_device_list_handler(uint8_t *const res_body)
 
     res_body[0] = device_count;
 
-    // DEBUG:
     OS_PRINTF("device_count: %d\r\n", device_count);
 
     return res_len;
