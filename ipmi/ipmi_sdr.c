@@ -70,7 +70,7 @@ void init_ipmi_sdr(void)
     FILL_SDR_STRUCT(&(sdr_list[1]), 2, 2, 
                     SENSOR_TYPE_VOLTAGE, 
                     SENSOR_UNIT_CODE_V,
-                    0, 0xFFFF, 0x0000, 
+                    0, 0xFFFF, 1, 
                     get_channel_data, 1, 
                     NULL, NULL, 
                     8056, -7, "ADC02", 5);

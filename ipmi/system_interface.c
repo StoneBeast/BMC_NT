@@ -3,11 +3,12 @@
  * @Date         : 2025-08-14 13:48:04
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-18 17:46:09
+ * @LastEditTime : 2025-10-20 11:30:02
  * @Description  : 
  */
 #include "system_interface.h"
 #include "ipmi.h"
+#include "ipmi_event.h"
 #include "ipmi_protocol.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -16,21 +17,20 @@
 
 /*
     System Interface Request Packeg
-    |Packeg Length 32 Bytes
-    | Msg Type(1 Byte)        | Msg Code(1 Byte) | Msg Length(2 Byte) | Response Body(27 Byte Max) | Checksum(1 Byte) |
+    | Packeg Length 32 Bytes |                   |                        |                 |                 |                   |               |                 |
+    | Pkg Header(4Byte)      | Pkg Length(2Byte) | Pkg Sequence ID(2Byte) | Msg Type(1Byte) | Msg Code(1Byte) | Msg Length(2Byte) | Response Body | Checksum(1Byte) |
 
     System Interface Responst Packeg
-    | Packeg Length 256 Bytes |                  |                    |                             |                  |
-    | Msg Type(1 Byte)        | Msg Code(1 Byte) | Msg Length(2 Byte) | Response Body(251 Byte Max) | Checksum(1 Byte) |
+    | Packeg Length 256 Bytes |                   |                        |                  |                  |                    |               |                  |
+    | Pkg Header(4Byte)       | Pkg Length(2Byte) | Pkg Sequence ID(2Byte) | Msg Type(1 Byte) | Msg Code(1 Byte) | Msg Length(2 Byte) | Response Body | Checksum(1 Byte) |
 */
-
-// TODO: 当前为了兼容当前版本上位机程序，sys请求长度为变长。后续升级则最好修改为定长
 
 static uint8_t check_sys_req(const uint8_t* msg);
 static void get_chksum(uint8_t * const msg);
 static void sys_request_handler_task_func(void* arg);
 static uint16_t get_device_list_handler(uint8_t *const res_body);
 static uint16_t get_sensor_list_handler(uint8_t target_addr, uint8_t *const res_body);
+static uint16_t get_event_handler(uint8_t *const res_body);
 static void sys_response(const uint8_t* msg);
 QueueHandle_t sys_req_queue;
 
@@ -61,6 +61,7 @@ static void sys_request_handler_task_func(void *arg)
     BaseType_t recv_ret = pdFALSE;
     uint8_t res_msg[SYSTEM_RESPONSE_LEN] = {0};
     uint16_t res_body_len = 0;
+    uint16_t i = 0;
 
     while (1) {
         recv_ret = xQueueReceive(sys_req_queue, &recv_req, portMAX_DELAY);
@@ -70,15 +71,24 @@ static void sys_request_handler_task_func(void *arg)
             OS_PRINTF("recv sys_req\r\n");
         }
         
-        if (0 != check_sys_req(recv_req.msg)) {
+        for (i = 0; i < recv_req.msg_len; i++)
+        {
+            OS_PRINTF(" %#02x ", recv_req.msg[i]);
+        }
+        OS_PRINTF("\r\n");
+        
+
+        if (0 != check_sys_req(&(recv_req.msg[SYS_MSG_TYPE_OFFSET]))) {
             OS_PRINTF("check error\r\n");
             continue;
         }
 
         memset(res_msg, 0, SYSTEM_RESPONSE_LEN);
+        *((uint32_t*)res_msg) = SYS_PKG_HEADER_MAGIC;
+        ((uint16_t*)(&(res_msg[SYS_PKG_LEN_OFFSET])))[0] = (SYSTEM_RESPONSE_LEN-SYS_PKG_HEADER_LENGTH-SYS_PKG_LEN_LENGTH-SYS_MSG_CHK_LENGTH);
+        memcpy(&(res_msg[SYS_PKG_SEQUENCE_ID_OFFSET]), &(recv_req.msg[SYS_PKG_SEQUENCE_ID_OFFSET]), SYS_PKG_SEQUENCE_ID_LENGTH);
         res_msg[SYS_MSG_TYPE_OFFSET] = SYS_MSG_TYPE_RES;
 
-        // TODO: switch
         switch (recv_req.msg[SYS_MSG_CODE_OFFSET])
         {
         case SYS_CMD_DEVICE_LIST:
@@ -91,6 +101,7 @@ static void sys_request_handler_task_func(void *arg)
             break;
         case SYS_CMD_GET_EVENT:
             OS_PRINTF("CMD: get event\r\n");
+            res_body_len = get_event_handler(&(res_msg[SYS_MSG_DATA_OFFSET]));
             break;
         default:
             OS_PRINTF("CMD: unkonw\r\n");
@@ -115,7 +126,6 @@ static uint16_t get_device_list_handler(uint8_t *const res_body)
     device_count = scan_card(&(res_body[1]));
     res_len = device_count;
 
-    // memcpy(res_body, &res_len, SYS_MSG_LEN_LENGTH);
     res_body[0] = device_count;
 
     // DEBUG:
@@ -168,12 +178,43 @@ static uint16_t get_sensor_list_handler(uint8_t target_addr, uint8_t *const res_
     return res_body_len;
 }
 
+static uint16_t get_event_handler(uint8_t *const res_body)
+{
+    int ret = 0;
+    ipmi_event event;
+    uint16_t p = 1;
+    uint8_t event_count = 0;
+    uint16_t body_len = 1;
+    uint16_t max_trans_count = 0;
+
+    max_trans_count = (SYS_MSG_RES_LENGTH) / (sizeof(ipmi_event));
+    OS_PRINTF("Max Transmit event count: %d\r\n", max_trans_count);
+
+    while (ret == 0 && (event_count < max_trans_count))
+    {
+        ret = get_event_item(&event);
+        if (ret == 0) {
+            OS_PRINTF("get event item\r\n");
+            memcpy(&(res_body[p]), &event, sizeof(ipmi_event));
+            p += sizeof(ipmi_event);
+            event_count += 1;
+        } else {
+            OS_PRINTF("no item\r\n");
+        }
+    }
+
+    res_body[0] = event_count;
+    body_len += event_count*sizeof(ipmi_event);
+
+    return body_len;
+}
+
 static uint8_t check_sys_req(const uint8_t* msg)
 {
     uint16_t sum = 0;
     uint16_t i = 0;
 
-    for (i = 0; i < SYSTEM_REQUEST_MAX_LEN; i++)
+    for (i = 0; i < (SYSTEM_REQUEST_MAX_LEN-SYS_PKG_HEADER_LENGTH-SYS_PKG_LEN_LENGTH-SYS_PKG_SEQUENCE_ID_LENGTH); i++)
     {
         sum += msg[i];
     }
@@ -190,11 +231,12 @@ static void get_chksum(uint8_t * const msg)
     uint16_t sum = 0;
     uint8_t chk = 0;
 
-    for (uint16_t i = 0; i < SYSTEM_RESPONSE_LEN; i++)
+    for (uint16_t i = SYS_PKG_SEQUENCE_ID_OFFSET; i < (SYSTEM_RESPONSE_LEN-SYS_PKG_HEADER_LENGTH-SYS_PKG_LEN_LENGTH); i++)
         sum += msg[i];
 
     chk = (0x100 - sum % 0x100);
     msg[SYS_MSG_RES_CHK_OFFSET] = chk;
+    OS_PRINTF("chk: %#02x\r\n", chk);
 }
 
 static void sys_response(const uint8_t* msg)

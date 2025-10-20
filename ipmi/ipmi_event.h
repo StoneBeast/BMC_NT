@@ -12,11 +12,15 @@
 #include <stdint.h>
 #include "ipmi_sdr.h"
 
+/* 预留的事件处理钩子，有拓展需求可以启用 */
+#define EVENT_PEEK  0
+
 /* 把事件定义成结构体，传输也是在同平台之间传输，故无需考虑对齐问题 */
 typedef ipmi_sdr ipmi_event;
 
 int init_ipmi_event(void);
 int get_event_item(ipmi_event *const event);
+int peek_event_item(ipmi_event *const event);
 void add_event(const ipmi_event *event);
 void is_over_value(const ipmi_sdr *sdr);
 
