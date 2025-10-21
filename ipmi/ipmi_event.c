@@ -3,7 +3,7 @@
  * @Date         : 2025-08-05 18:37:42
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-18 13:49:23
+ * @LastEditTime : 2025-10-21 16:55:15
  * @Description  : 
  */
 
@@ -91,6 +91,10 @@ void is_over_value(const ipmi_sdr* sdr)
     if (sdr->is_signed == 0) { /* 无符号 */
         if ((sdr->read_data < sdr->lower_threshold) || (sdr->read_data > sdr->higher_threshold)) {
             /* 超出阈值，产生事件 */
+            if (sdr->sensor_no == 2) {  /* 电池 */
+                OS_PRINTF("Battery Warn\r\n");
+                battert_warn();
+            }
             OS_PRINTF("add to event\r\n");
             add_event((ipmi_event*)sdr);
         }

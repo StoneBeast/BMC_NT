@@ -10,6 +10,7 @@
 #define IPMI_REQ_QUEUE_MAX_LEN  5
 #define SENSOR_MAX_NUMBER       6
 #define SLOT_COUNT              8
+#define BATTERY_INX             1
 
 #define IPMI_MSG_CODE_SCAN      (0x01)
 #define IPMI_MSG_CODE_GET_SDR   (0x02)
