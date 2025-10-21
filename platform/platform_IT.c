@@ -213,3 +213,17 @@ void USART1_IRQHandler(void)
         portYIELD_FROM_ISR(is_yield);
     }
 }
+
+extern volatile uint32_t SystemTick;
+
+void TIM6_IRQHandler(void)
+{
+    if (TIM_GetITStatus(TIM6, TIM_IT_Update) != RESET)
+    {
+        // 清除中断标志位
+        TIM_ClearITPendingBit(TIM6, TIM_IT_Update);
+
+        // 系统时基计数器递增
+        SystemTick++;
+    }
+}

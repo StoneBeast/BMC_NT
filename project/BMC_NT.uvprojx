@@ -337,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F10X_HD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\user;..\platform;..\platform\inc;..\driver\FWLib\inc;..\driver\CMSIS;..\freertos\include;..\freertos\portable\RVDS\ARM_CM3;..\freertos;..\ipmi</IncludePath>
+              <IncludePath>..\user;..\platform;..\platform\inc;..\driver\FWLib\inc;..\driver\CMSIS;..\freertos\include;..\freertos\portable\RVDS\ARM_CM3;..\freertos;..\ipmi;..\nct75_driver</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -561,6 +561,16 @@
               <FileType>1</FileType>
               <FilePath>..\platform\src\adc.c</FilePath>
             </File>
+            <File>
+              <FileName>mem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\platform\src\mem.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\platform\src\timer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -645,6 +655,16 @@
               <FileName>system_interface.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\ipmi\system_interface.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>NCT75</GroupName>
+          <Files>
+            <File>
+              <FileName>nct75.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\nct75_driver\nct75.c</FilePath>
             </File>
           </Files>
         </Group>

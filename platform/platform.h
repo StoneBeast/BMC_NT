@@ -8,6 +8,9 @@
 #include "i2c.h"
 #include "uart.h"
 #include "adc.h"
+#include "mem.h"
+#include "nct75.h"
+#include "timer.h"
 
 #include "FreeRTOS.h"
 #include "task.h"

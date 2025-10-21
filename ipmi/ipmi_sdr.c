@@ -1,11 +1,12 @@
 /*** 
  * @Author       : stoneBeast
- * @Date         : 2025-08-06 17:06:19
+ * @Date         : 2025-08-05 18:53:12
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-14 10:19:40
+ * @LastEditTime : 2025-10-21 09:46:28
  * @Description  : 
  */
+
 #include "ipmi_sdr.h"
 #include "ipmi_event.h"
 #include "ipmi.h"
@@ -58,6 +59,8 @@ static void update_handler_callback(TimerHandle_t xTimer);
 void init_ipmi_sdr(void)
 {
     uint8_t i = 0;
+    uint8_t tmpA_addr = SENSOR_NCT75_1_ADDR;
+    uint8_t tmpB_addr = SENSOR_NCT75_2_ADDR;
 
     FILL_SDR_STRUCT(&(sdr_list[0]), 1, 1, 
                     SENSOR_TYPE_VOLTAGE, 
@@ -91,6 +94,22 @@ void init_ipmi_sdr(void)
                     get_channel_data, 3, 
                     NULL, NULL, 
                     8056, -7, "ADC04", 5);
+
+    FILL_SDR_STRUCT(&(sdr_list[4]), 5, 5,
+                    SENSOR_TYPE_TEMPERATURE,
+                    SENSOR_UNIT_CODE_DC,
+                    1, 0xFFF, 0x0000,
+                    read_nct75_row_data, SENSOR_NCT75_1_ADDR,
+                    NULL, NULL,
+                    625, -4, "TMP_A", 5);
+
+    FILL_SDR_STRUCT(&(sdr_list[5]), 6, 6,
+                    SENSOR_TYPE_TEMPERATURE,
+                    SENSOR_UNIT_CODE_DC,
+                    1, 0xFFF, 0x0000,
+                    read_nct75_row_data, SENSOR_NCT75_2_ADDR,
+                    NULL, NULL,
+                    625, -4, "TMP_B", 5);
 
     for (i = 0; i < SENSOR_MAX_NUMBER; i++) {
         if (sdr_list[i].sensor_init != NULL) {
