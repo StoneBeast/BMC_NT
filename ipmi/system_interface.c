@@ -3,7 +3,7 @@
  * @Date         : 2025-08-14 13:48:04
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-10-20 15:18:25
+ * @LastEditTime : 2025-10-22 17:06:45
  * @Description  : 
  */
 #include "system_interface.h"
@@ -89,6 +89,8 @@ static void sys_request_handler_task_func(void *arg)
         memcpy(&(res_msg[SYS_PKG_SEQUENCE_ID_OFFSET]), &(recv_req.msg[SYS_PKG_SEQUENCE_ID_OFFSET]), SYS_PKG_SEQUENCE_ID_LENGTH);
         res_msg[SYS_MSG_TYPE_OFFSET] = SYS_MSG_TYPE_RES;
 
+        res_msg[SYS_MSG_CODE_OFFSET] = recv_req.msg[SYS_MSG_CODE_OFFSET];
+
         switch (recv_req.msg[SYS_MSG_CODE_OFFSET])
         {
         case SYS_CMD_DEVICE_LIST:
@@ -105,15 +107,17 @@ static void sys_request_handler_task_func(void *arg)
             break;
         default:
             OS_PRINTF("CMD: unkonw\r\n");
+            res_msg[SYS_MSG_CODE_OFFSET] = SYS_CMD_UNKNOW;
+            res_msg[SYS_MSG_DATA_OFFSET] = recv_req.msg[SYS_MSG_CODE_OFFSET];
+            res_body_len = SYS_MSG_CODE_LENGTH;
             break;
         }
 
-        if (res_body_len != 0) {
+        if (res_body_len != 0)
             memcpy(&(res_msg[SYS_MSG_LEN_OFFSET]), &res_body_len, SYS_MSG_LEN_LENGTH);
-            res_msg[SYS_MSG_CODE_OFFSET] = recv_req.msg[SYS_MSG_CODE_OFFSET];
-            get_chksum(res_msg);
-            sys_response(res_msg);
-        }
+
+        get_chksum(res_msg);
+        sys_response(res_msg);
 
     }
 }
