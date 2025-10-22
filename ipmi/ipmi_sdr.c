@@ -3,7 +3,7 @@
  * @Date         : 2025-08-05 18:53:12
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-10-21 17:00:40
+ * @LastEditTime : 2025-10-22 14:25:54
  * @Description  : 
  */
 
@@ -61,13 +61,13 @@ void init_ipmi_sdr(void)
 {
     uint8_t i = 0;
 
-    FILL_SDR_STRUCT(&(sdr_list[0]), 1, 1, 
-                    SENSOR_TYPE_VOLTAGE, 
-                    SENSOR_UNIT_CODE_V,
-                    0, 0xFFFF, 0x000A, 
-                    get_channel_data, 0, 
-                    init_adc, NULL, 
-                    8056, -7, "ADC01");
+    FILL_SDR_STRUCT(&(sdr_list[0]), 1, 1,
+                    SENSOR_TYPE_POWER,
+                    SENSOR_UNIT_CODE_A,
+                    0, 0xFFFF, 0x000A,
+                    get_channel_data, 0,
+                    init_adc, NULL,
+                    25998, -7, "12V_MON");
 
     FILL_SDR_STRUCT(&(sdr_list[BATTERY_INX]), 2, 2,
                     SENSOR_TYPE_VOLTAGE,
@@ -75,24 +75,23 @@ void init_ipmi_sdr(void)
                     0, 0xFFFF, 0x4D9,
                     get_channel_data, 1,
                     sdr_init_battery_pin, NULL,
-                    8056, -7, "RTC_BAT");
+                    16113, -7, "BAT_MON");
 
-    FILL_SDR_STRUCT(&(sdr_list[2]), 3, 3, 
-                    SENSOR_TYPE_VOLTAGE, 
+    FILL_SDR_STRUCT(&(sdr_list[2]), 3, 3,
+                    SENSOR_TYPE_VOLTAGE,
                     SENSOR_UNIT_CODE_V,
-                    0, 0xFFFF, 0x0000, 
-                    get_channel_data, 2, 
-                    NULL, NULL, 
-                    8056, -7, "ADC03");
+                    0, 0xFFFF, 0x0000,
+                    get_channel_data, 2,
+                    NULL, NULL,
+                    16113, -7, "GBE_1V1");
 
-    
-    FILL_SDR_STRUCT(&(sdr_list[3]), 4, 4, 
-                    SENSOR_TYPE_VOLTAGE, 
+    FILL_SDR_STRUCT(&(sdr_list[3]), 4, 4,
+                    SENSOR_TYPE_VOLTAGE,
                     SENSOR_UNIT_CODE_V,
-                    0, 0xFFFF, 0x0000, 
-                    get_channel_data, 3, 
-                    NULL, NULL, 
-                    8056, -7, "ADC04");
+                    0, 0xFFFF, 0x0000,
+                    get_channel_data, 3,
+                    NULL, NULL,
+                    16113, -7, "P3V3");
 
     FILL_SDR_STRUCT(&(sdr_list[4]), 5, 5,
                     SENSOR_TYPE_TEMPERATURE,
