@@ -3,7 +3,7 @@
  * @Date         : 2025-07-29 15:15:04
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-18 11:02:20
+ * @LastEditTime : 2025-10-23 10:55:30
  * @Description  : 
  */
 
@@ -71,6 +71,26 @@ uint8_t get_card_sdr_by_id(uint8_t addr, uint8_t id, ipmi_sdr *const sdr)
     }
 
     return next_id;
+}
+
+uint16_t get_version_info(uint8_t addr, char* const ver_str)
+{
+    uint8_t res_body[32] = {0};
+    int ret = 0;
+
+    if (addr == BMC_ADDR) {
+        sprintf(ver_str, "Version %d.%d.%d. Built on %s %s", MAIN_VERSION, SUB_VERSION, FIX_VERSION, __DATE__, __TIME__);
+        return strlen(ver_str);
+    } else {
+        ret = ipmi_request(addr, IPMI_MSG_CODE_GET_VERSION, NULL, 0, 2000, res_body);
+        if (ret == IPMI_ERR_OK) {
+            memcpy(ver_str, &(res_body[1]), res_body[0]);
+            return res_body[0];
+        } else if (ret == IPMI_ERR_BUSY) {
+            I2C_reset();
+        }
+        return 0;
+    }
 }
 
 // DEBUG: 测试函数，测试获取目标ipmc的所有sdr功能

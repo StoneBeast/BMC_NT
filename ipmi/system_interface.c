@@ -3,7 +3,7 @@
  * @Date         : 2025-08-14 13:48:04
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-10-22 17:06:45
+ * @LastEditTime : 2025-10-23 10:50:48
  * @Description  : 
  */
 #include "system_interface.h"
@@ -31,6 +31,7 @@ static void sys_request_handler_task_func(void* arg);
 static uint16_t get_device_list_handler(uint8_t *const res_body);
 static uint16_t get_sensor_list_handler(uint8_t target_addr, uint8_t *const res_body);
 static uint16_t get_event_handler(uint8_t *const res_body);
+static uint16_t get_version_info_handler(uint8_t target_addr, uint8_t *const res_body);
 static void sys_response(const uint8_t* msg);
 QueueHandle_t sys_req_queue;
 
@@ -104,6 +105,10 @@ static void sys_request_handler_task_func(void *arg)
         case SYS_CMD_GET_EVENT:
             OS_PRINTF("CMD: get event\r\n");
             res_body_len = get_event_handler(&(res_msg[SYS_MSG_DATA_OFFSET]));
+            break;
+        case SYS_CMD_MCU_VERSION:
+            OS_PRINTF("CMD: get Version Info: %#02x\r\n", recv_req.msg[SYS_MSG_DATA_OFFSET]);
+            res_body_len = get_version_info_handler(recv_req.msg[SYS_MSG_DATA_OFFSET], &(res_msg[SYS_MSG_DATA_OFFSET]));
             break;
         default:
             OS_PRINTF("CMD: unkonw\r\n");
@@ -208,6 +213,15 @@ static uint16_t get_event_handler(uint8_t *const res_body)
 
     res_body[0] = event_count;
     body_len += event_count*sizeof(ipmi_event);
+
+    return body_len;
+}
+
+static uint16_t get_version_info_handler(uint8_t target_addr, uint8_t *const res_body)
+{
+    // |ver info str(nByte)|
+    uint16_t body_len = 0;
+    body_len = get_version_info(target_addr, (char*)res_body);
 
     return body_len;
 }

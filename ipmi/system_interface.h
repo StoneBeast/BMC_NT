@@ -41,6 +41,7 @@
 #define SYS_CMD_DEVICE_LIST     0x01
 #define SYS_CMD_DEVICE_SENSOR   0x02
 #define SYS_CMD_GET_EVENT       0x81
+#define SYS_CMD_MCU_VERSION     0xA1
 #define SYS_CMD_UNKNOW          0xFF
 
 typedef struct {
