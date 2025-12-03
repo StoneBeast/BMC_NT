@@ -67,7 +67,7 @@ void init_ipmi_sdr(void)
                     0, 0xFFFF, 0x000A,
                     get_channel_data, 0,
                     init_adc, NULL,
-                    25998, -7, "12V_MON");
+                    30961, -7, "12V_MON");
 
     FILL_SDR_STRUCT(&(sdr_list[BATTERY_INX]), 2, 2,
                     SENSOR_TYPE_VOLTAGE,
