@@ -226,3 +226,45 @@ static uint8_t wait_onMasterAddressFlag_timeout(I2C_TypeDef *I2Cx, uint32_t I2C_
 
     return 1;
 }
+
+uint8_t i2c_mem_read_soft(uint8_t devAddr, uint8_t regAddr, uint8_t *pData, uint16_t len)
+{
+    uint16_t i;
+    /* 1. 启动 + 写设备地址（写） */
+    i2c_Start_soft();
+    i2c_SendByte_soft(devAddr);
+    if (!i2c_WaitAck_soft())
+    {
+        i2c_Stop_soft();
+        return 1;
+    }
+
+    /* 2. 写寄存器地址 */
+    i2c_SendByte_soft(regAddr);
+    if (!i2c_WaitAck_soft())
+    {
+        i2c_Stop_soft();
+        return 1;
+    }
+
+    /* 3. 重启 + 读设备地址（读） */
+    i2c_Start_soft();
+    i2c_SendByte_soft((devAddr) | 0x01);
+    if (!i2c_WaitAck_soft())
+    {
+        i2c_Stop_soft();
+        return 1;
+    }
+
+    /* 4. 连续读取 */
+    for (i = 0; i < len; i++)
+    {
+        pData[i] = i2c_RecvByte_soft();
+        if (i == len - 1)
+            i2c_NAck_soft(); /* 最后一字节回 NACK */
+        else
+            i2c_Ack_soft();
+    }
+    i2c_Stop_soft();
+    return 0;
+}

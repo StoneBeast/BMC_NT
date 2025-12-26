@@ -3,7 +3,7 @@
  * @Date         : 2025-07-29 14:33:46
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-15 14:15:23
+ * @LastEditTime : 2025-12-19 14:46:36
  * @Description  : 
  */
 #include "platform.h"
@@ -16,7 +16,7 @@ static void __init_uart(USART_TypeDef* usartx);
 
 void init_sys_usart(void)
 {
-    __init_uart(USART1);
+    __init_uart(USART3);
 }
 void init_debug_usart(void)
 {
@@ -31,18 +31,23 @@ void init_debug_usart(void)
  */
 static void __init_uart(USART_TypeDef* usartx)
 {
-    uint16_t usart_tx_pin = GPIO_Pin_9;
-    uint16_t usart_rx_pin = GPIO_Pin_10;
+    uint16_t usart_tx_pin = GPIO_Pin_10;
+    uint16_t usart_rx_pin = GPIO_Pin_11;
+    GPIO_TypeDef* tar_gpio = GPIOC;
 
     //  初始化gpio
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 
-    if (usartx == USART1) {
-        RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-    } else {
+    if (usartx == USART3) {
+        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO, ENABLE);
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+        GPIO_PinRemapConfig(AFIO_MAPR_USART3_REMAP_PARTIALREMAP, ENABLE);
+    }
+    else if (usartx == USART2) {
+        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
         usart_tx_pin = GPIO_Pin_2;
         usart_rx_pin = GPIO_Pin_3;
+        tar_gpio = GPIOA;
     }
 
     GPIO_InitTypeDef GPIO_InitStruct;
@@ -50,14 +55,14 @@ static void __init_uart(USART_TypeDef* usartx)
 
     GPIO_InitStruct.GPIO_Pin = usart_rx_pin;
 
-    GPIO_Init(GPIOA, &GPIO_InitStruct);
+    GPIO_Init(tar_gpio, &GPIO_InitStruct);
 
     GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP;
 
     GPIO_InitStruct.GPIO_Pin = usart_tx_pin;
 
     GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOA, &GPIO_InitStruct);
+    GPIO_Init(tar_gpio, &GPIO_InitStruct);
 
     USART_InitTypeDef USART_InitStruct;
     USART_InitStruct.USART_BaudRate = 115200;
@@ -68,11 +73,12 @@ static void __init_uart(USART_TypeDef* usartx)
     USART_InitStruct.USART_WordLength = USART_WordLength_8b;
     USART_Init(usartx, &USART_InitStruct);
 
-    if (usartx == USART1) {
+    if (usartx == USART3)
+    {
         NVIC_InitTypeDef NVIC_InitStruct;
     
-        NVIC_InitStruct.NVIC_IRQChannel = USART1_IRQn;
-    
+        NVIC_InitStruct.NVIC_IRQChannel = USART3_IRQn;
+
         NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x02;
         NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x00;
     
@@ -80,13 +86,16 @@ static void __init_uart(USART_TypeDef* usartx)
         NVIC_Init(&NVIC_InitStruct);
     
         // TODO: 之后尽量不使用idel中断，意外因素较多，不可控
-        USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-        USART_ITConfig(USART1, USART_IT_IDLE, ENABLE);
+        USART_ITConfig(usartx, USART_IT_RXNE, ENABLE);
+        USART_ITConfig(usartx, USART_IT_IDLE, ENABLE);
 
         DMA_InitTypeDef DMA_InitStructure;
-        DMA_DeInit(DMA1_Channel4);  // USART1_TX 使用 DMA1 通道4
-        
-        DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(USART1->DR);  // 外设地址
+
+        DMA_DeInit(DMA1_Channel2);  // USART3_TX 使用 DMA1 通道2
+        RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+
+        DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(USART3->DR);  // 外设地址
+
         DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)send_buffer;        // 内存地址
         DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;                   // 内存到外设
         DMA_InitStructure.DMA_BufferSize = SYSTEM_RESPONSE_LEN;              // 传输数据量
@@ -97,8 +106,9 @@ static void __init_uart(USART_TypeDef* usartx)
         DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                       // 普通模式(非循环)
         DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;               // 中优先级
         DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                        // 禁用内存到内存
-        DMA_Init(DMA1_Channel4, &DMA_InitStructure);
 
+        DMA_Init(DMA1_Channel2, &DMA_InitStructure);
+            
         USART_DMACmd(usartx, USART_DMAReq_Tx, ENABLE);
     }
 
@@ -107,11 +117,11 @@ static void __init_uart(USART_TypeDef* usartx)
 
 void usart_start_send(const uint8_t *msg)
 {
-    DMA_Cmd(DMA1_Channel4, DISABLE);
-    DMA_SetCurrDataCounter(DMA1_Channel4, SYSTEM_RESPONSE_LEN);
+    DMA_Cmd(DMA1_Channel2, DISABLE);
+    DMA_SetCurrDataCounter(DMA1_Channel2, SYSTEM_RESPONSE_LEN);
 
     memcpy(send_buffer, msg, SYSTEM_RESPONSE_LEN);
-    DMA_Cmd(DMA1_Channel4, ENABLE);
+    DMA_Cmd(DMA1_Channel2, ENABLE);
 }
 
 /*** 
@@ -120,14 +130,14 @@ void usart_start_send(const uint8_t *msg)
  */
 uint8_t usart_is_send_complate(void)
 {
-    if (DMA_GetFlagStatus(DMA1_FLAG_TC4) == RESET)
+    if (DMA_GetFlagStatus(DMA1_FLAG_TC2) == RESET)
         return 0;
 
     /* 清除传输完成标志 */
-    DMA_ClearFlag(DMA1_FLAG_TC4);
+    DMA_ClearFlag(DMA1_FLAG_TC2);
 
     /* 禁用DMA通道 */
-    DMA_Cmd(DMA1_Channel4, DISABLE);
+    DMA_Cmd(DMA1_Channel2, DISABLE);
 
     return 1;
 }

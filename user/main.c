@@ -44,10 +44,12 @@ int main(void)
 
 // static void blink_task_func (void* arg)
 // {
+//     uint8_t temp[256] = {0};
+//     memset(temp, 0x55, 256);
 //     while (1) {
-//         ledOn();
-//         vTaskDelay(pdMS_TO_TICKS(500));
-//         ledOff();
+//         usart_start_send(temp);
+//         while (0 == usart_is_send_complate())
+//             ;
 //         vTaskDelay(pdMS_TO_TICKS(500));
 //     }
 // }

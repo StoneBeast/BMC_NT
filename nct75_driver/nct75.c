@@ -24,7 +24,8 @@ uint16_t read_nct75_row_data(uint8_t dev_addr)
     uint8_t buf[2] = {0};
 
     // Read two bytes from temperature register
-    i2c_mem_read(SENSOR_I2C, (dev_addr<<1), NCT75_REG_TEMP, 2, buf, 100);
+    i2c_mem_read_soft((dev_addr << 1), NCT75_REG_TEMP, buf, 2);
+    // i2c_mem_read(SENSOR_I2C, (dev_addr<<1), NCT75_REG_TEMP, 2, buf, 100);
 
     // Combine bytes: MSB is temperature sign and integer bits, LSB holds fractional bits
     int16_t raw = (int16_t)((buf[0] << 8) | buf[1]);

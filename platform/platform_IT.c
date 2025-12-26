@@ -80,7 +80,7 @@ void DebugMon_Handler(void)
 
 extern void I2C_dma_switch(uint8_t function);
 
-void I2C1_EV_IRQHandler(void)
+void I2C2_EV_IRQHandler(void)
 {
     if (SET == I2C_GetITStatus(IPMI_I2C, I2C_IT_ADDR)) {
         /* 匹配地址 */
@@ -93,7 +93,7 @@ void I2C1_EV_IRQHandler(void)
         } else {    /* 方向为发送 */
             I2C_it_switch(0);
             I2C_AcknowledgeConfig(IPMI_I2C, DISABLE);
-            DMA_Cmd(DMA1_Channel6, ENABLE);
+            DMA_Cmd(DMA1_Channel4, ENABLE);
         }
     }
     if (SET == I2C_GetITStatus(IPMI_I2C, I2C_IT_STOPF)) {
@@ -102,7 +102,7 @@ void I2C1_EV_IRQHandler(void)
     }
 }
 
-void I2C1_ER_IRQHandler(void)
+void I2C2_ER_IRQHandler(void)
 {
     if (SET == I2C_GetITStatus(IPMI_I2C, I2C_IT_TIMEOUT)) {
         PRINTF("timeout err\r\n");
@@ -123,13 +123,13 @@ extern uint8_t ipmi_recv_buf[IPMI_PROTOCOL_MAX_LEN];
 // extern TaskHandle_t bmc_task_handle;
 extern EventGroupHandle_t ipmi_protocol_evg;
 
-void DMA1_Channel6_IRQHandler(void)
+void DMA1_Channel4_IRQHandler(void)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-    if (DMA_GetITStatus(DMA1_IT_TC6) != RESET) {
+    if (DMA_GetITStatus(DMA1_IT_TC4) != RESET) {
         /* 清除中断标志 */
-        DMA_ClearITPendingBit(DMA1_IT_TC6);
+        DMA_ClearITPendingBit(DMA1_IT_TC4);
 
         /*
             BUG: DMA中传输数据设置为32Byte，当数据全部被从内存的buffer
@@ -146,8 +146,8 @@ void DMA1_Channel6_IRQHandler(void)
         /* 打开中断 */
         I2C_it_switch(1);
         I2C_AcknowledgeConfig(IPMI_I2C, ENABLE);
-        DMA_Cmd(DMA1_Channel6, DISABLE);
-        DMA_SetCurrDataCounter(DMA1_Channel6, IPMI_PROTOCOL_MAX_LEN);
+        DMA_Cmd(DMA1_Channel4, DISABLE);
+        DMA_SetCurrDataCounter(DMA1_Channel4, IPMI_PROTOCOL_MAX_LEN);
 
         xEventGroupSetBitsFromISR(ipmi_protocol_evg, IPMI_SEND_CMP_BIT, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -158,17 +158,17 @@ extern MessageBufferHandle_t req_msgBuffer;
 extern QueueHandle_t event_queue;
 
 /*** 
- * @brief DMA1_channel7 中断处理函数，负责I2C1的DMA接收
+ * @brief DMA1_channel5 中断处理函数，负责I2C2的DMA接收
  * @return [void]
  */
-void DMA1_Channel7_IRQHandler(void)
+void DMA1_Channel5_IRQHandler(void)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     int check_ret = 0;
 
-    if (DMA_GetITStatus(DMA1_IT_TC7) != RESET) {
+    if (DMA_GetITStatus(DMA1_IT_TC5) != RESET) {
         /* 清除中断标志 */
-        DMA_ClearITPendingBit(DMA1_IT_TC7);
+        DMA_ClearITPendingBit(DMA1_IT_TC5);
 
         I2C_it_switch(1);
         I2C_dma_switch(0);
@@ -211,6 +211,33 @@ void USART1_IRQHandler(void)
         xQueueSendFromISR(sys_req_queue, &sys_req_msg, &is_yield);
         memset(&sys_req_msg, 0, sizeof(sys_req_msg));
         portYIELD_FROM_ISR(is_yield);
+    }
+}
+
+void USART3_IRQHandler(void)
+{
+    uint32_t temp_clear = 0;
+    uint8_t rc = 0;
+    BaseType_t is_yield = pdFALSE;
+
+    if (SET == USART_GetITStatus(USART3, USART_IT_RXNE))
+    {
+        rc = USART_ReceiveData(USART3);
+        if (sys_req_msg.msg_len < SYSTEM_REQUEST_MAX_LEN)
+        {
+            sys_req_msg.msg[sys_req_msg.msg_len] = rc;
+            sys_req_msg.msg_len++;
+        }
+    }
+    else if (SET == USART_GetITStatus(USART3, USART_IT_IDLE))
+    { /* idel 中断，接收完成？ */
+        /* 清除idel中断 */
+        temp_clear = USART3->SR;
+        temp_clear = USART3->DR;
+        (void)temp_clear;
+
+        xQueueSendFromISR(sys_req_queue, &sys_req_msg, &is_yield);
+        memset(&sys_req_msg, 0, sizeof(sys_req_msg));
     }
 }
 

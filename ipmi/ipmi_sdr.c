@@ -3,7 +3,7 @@
  * @Date         : 2025-08-05 18:53:12
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-10-22 14:25:54
+ * @LastEditTime : 2025-12-19 10:48:21
  * @Description  : 
  */
 
@@ -62,12 +62,12 @@ void init_ipmi_sdr(void)
     uint8_t i = 0;
 
     FILL_SDR_STRUCT(&(sdr_list[0]), 1, 1,
-                    SENSOR_TYPE_POWER,
-                    SENSOR_UNIT_CODE_A,
+                    SENSOR_TYPE_VOLTAGE,
+                    SENSOR_UNIT_CODE_V,
                     0, 0xFFFF, 0x000A,
                     get_channel_data, 0,
                     init_adc, NULL,
-                    30961, -7, "12V_MON");
+                    16113, -7, "3V3_STBY");
 
     FILL_SDR_STRUCT(&(sdr_list[BATTERY_INX]), 2, 2,
                     SENSOR_TYPE_VOLTAGE,
@@ -75,7 +75,7 @@ void init_ipmi_sdr(void)
                     0, 0xFFFF, 0x4D9,
                     get_channel_data, 1,
                     sdr_init_battery_pin, NULL,
-                    16113, -7, "BAT_MON");
+                    8057, -7, "X100_VDD");
 
     FILL_SDR_STRUCT(&(sdr_list[2]), 3, 3,
                     SENSOR_TYPE_VOLTAGE,
@@ -83,7 +83,7 @@ void init_ipmi_sdr(void)
                     0, 0xFFFF, 0x0000,
                     get_channel_data, 2,
                     NULL, NULL,
-                    16113, -7, "GBE_1V1");
+                    8057, -7, "VDD_CORE");
 
     FILL_SDR_STRUCT(&(sdr_list[3]), 4, 4,
                     SENSOR_TYPE_VOLTAGE,
@@ -91,7 +91,7 @@ void init_ipmi_sdr(void)
                     0, 0xFFFF, 0x0000,
                     get_channel_data, 3,
                     NULL, NULL,
-                    16113, -7, "P3V3");
+                    8057, -7, "VDDQ");
 
     FILL_SDR_STRUCT(&(sdr_list[4]), 5, 5,
                     SENSOR_TYPE_TEMPERATURE,
