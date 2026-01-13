@@ -1,0 +1,225 @@
+version: "4.1"
+name: BMC_NT
+type: ARM
+deviceName: null
+packDir: null
+srcDirs: []
+virtualFolder:
+  name: <virtual_root>
+  files: []
+  folders:
+    - name: User
+      files:
+        - path: user/main.c
+      folders: []
+    - name: FWLib
+      files:
+        - path: driver/FWLib/src/misc.c
+        - path: driver/FWLib/src/stm32f10x_adc.c
+        - path: driver/FWLib/src/stm32f10x_bkp.c
+        - path: driver/FWLib/src/stm32f10x_can.c
+        - path: driver/FWLib/src/stm32f10x_cec.c
+        - path: driver/FWLib/src/stm32f10x_crc.c
+        - path: driver/FWLib/src/stm32f10x_dac.c
+        - path: driver/FWLib/src/stm32f10x_dbgmcu.c
+        - path: driver/FWLib/src/stm32f10x_dma.c
+        - path: driver/FWLib/src/stm32f10x_exti.c
+        - path: driver/FWLib/src/stm32f10x_flash.c
+        - path: driver/FWLib/src/stm32f10x_fsmc.c
+        - path: driver/FWLib/src/stm32f10x_gpio.c
+        - path: driver/FWLib/src/stm32f10x_i2c.c
+        - path: driver/FWLib/src/stm32f10x_iwdg.c
+        - path: driver/FWLib/src/stm32f10x_pwr.c
+        - path: driver/FWLib/src/stm32f10x_rcc.c
+        - path: driver/FWLib/src/stm32f10x_rtc.c
+        - path: driver/FWLib/src/stm32f10x_sdio.c
+        - path: driver/FWLib/src/stm32f10x_spi.c
+        - path: driver/FWLib/src/stm32f10x_tim.c
+        - path: driver/FWLib/src/stm32f10x_usart.c
+        - path: driver/FWLib/src/stm32f10x_wwdg.c
+      folders: []
+    - name: CMSIS
+      files:
+        - path: driver/CMSIS/core_cm3.c
+        - path: driver/CMSIS/system_stm32f10x.c
+      folders: []
+    - name: Startup
+      files:
+        - path: driver/startup_stm32f10x_hd.s
+      folders: []
+    - name: Platform
+      files:
+        - path: platform/platform_IT.c
+        - path: platform/src/gpio.c
+        - path: platform/src/uart.c
+        - path: platform/src/i2c.c
+        - path: platform/src/adc.c
+        - path: platform/src/mem.c
+        - path: platform/src/timer.c
+      folders: []
+    - name: FreeRTOS_SRC
+      files:
+        - path: freertos/croutine.c
+        - path: freertos/event_groups.c
+        - path: freertos/list.c
+        - path: freertos/queue.c
+        - path: freertos/stream_buffer.c
+        - path: freertos/tasks.c
+        - path: freertos/timers.c
+      folders: []
+    - name: FreeRTOS_Port
+      files:
+        - path: freertos/portable/MemMang/heap_4.c
+        - path: freertos/portable/RVDS/ARM_CM3/port.c
+      folders: []
+    - name: IPMI
+      files:
+        - path: ipmi/ipmi.c
+        - path: ipmi/ipmi_protocol.c
+        - path: ipmi/ipmi_event.c
+        - path: ipmi/ipmi_sdr.c
+        - path: ipmi/system_interface.c
+      folders: []
+    - name: NCT75
+      files:
+        - path: nct75_driver/nct75.c
+      folders: []
+dependenceList: []
+outDir: build
+miscInfo:
+  uid: ae3b692b2228974b343c6bed637117c2
+targets:
+  BMC_NT:
+    cppPreprocessAttrs:
+      defineList:
+        - USE_STDPERIPH_DRIVER
+        - STM32F10X_HD
+      incList:
+        - user
+        - platform
+        - platform/inc
+        - driver/FWLib/inc
+        - driver/CMSIS
+        - freertos/include
+        - freertos/portable/RVDS/ARM_CM3
+        - freertos
+        - ipmi
+        - nct75_driver
+        - .cmsis/include
+        - project/RTE/_BMC_NT
+      libList: []
+    excludeList: []
+    toolchain: AC5
+    toolchainConfigMap:
+      AC5:
+        archExtensions: ""
+        cpuType: Cortex-M3
+        floatingPointHardware: none
+        options:
+          version: 4
+          afterBuildTasks: []
+          asm-compiler: {}
+          beforeBuildTasks: []
+          c/cpp-compiler:
+            CXX_FLAGS: --diag_suppress=1 --diag_suppress=1295
+            C_FLAGS: --diag_suppress=1 --diag_suppress=1295
+            c99-mode: true
+            one-elf-section-per-function: true
+            optimization: level-0
+            warnings: all-warnings
+          global:
+            output-debug-info: enable
+            use-microLIB: false
+          linker:
+            $outputTaskExcludes:
+              - .bin
+            output-format: elf
+            ro-base: "0x08000000"
+            rw-base: "0x20000000"
+            xo-base: ""
+        scatterFilePath: ""
+        storageLayout:
+          RAM:
+            - id: 1
+              isChecked: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              noInit: false
+              tag: RAM
+            - id: 2
+              isChecked: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              noInit: false
+              tag: RAM
+            - id: 3
+              isChecked: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              noInit: false
+              tag: RAM
+            - id: 1
+              isChecked: true
+              mem:
+                size: "0xc000"
+                startAddr: "0x20000000"
+              noInit: false
+              tag: IRAM
+            - id: 2
+              isChecked: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              noInit: false
+              tag: IRAM
+          ROM:
+            - id: 1
+              isChecked: false
+              isStartup: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              tag: ROM
+            - id: 2
+              isChecked: false
+              isStartup: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              tag: ROM
+            - id: 3
+              isChecked: false
+              isStartup: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              tag: ROM
+            - id: 1
+              isChecked: true
+              isStartup: true
+              mem:
+                size: "0x40000"
+                startAddr: "0x8000000"
+              tag: IROM
+            - id: 2
+              isChecked: false
+              isStartup: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              tag: IROM
+        useCustomScatterFile: false
+    uploadConfigMap:
+      JLink:
+        baseAddr: ""
+        bin: ""
+        cpuInfo:
+          cpuName: STM32F103RC
+          vendor: ST
+        otherCmds: ""
+        proType: 1
+        speed: 8000
+    uploader: JLink

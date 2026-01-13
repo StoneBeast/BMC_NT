@@ -3,3 +3,24 @@ CM3_driver
 project/*
 !project/BMC_NT.uvoptx
 !project/BMC_NT.uvprojx
+
+# dot files
+/.vscode/launch.json
+/.settings
+/.eide/log
+/.eide.usr.ctx.json
+
+# project out
+/build
+/bin
+/obj
+/out
+
+# keil project file
+/project
+
+# eide template
+*.ept
+*.eide-template
+
+/.cmsis
