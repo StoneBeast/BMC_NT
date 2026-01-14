@@ -3,7 +3,7 @@
  * @Date         : 2025-07-29 15:15:04
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-12-05 10:19:14
+ * @LastEditTime : 2026-01-14 11:34:37
  * @Description  : 
  */
 
@@ -73,15 +73,17 @@ uint8_t get_card_sdr_by_id(uint8_t addr, uint8_t id, ipmi_sdr *const sdr)
     return next_id;
 }
 
-// FIX: 无法获取IPMC版本信息
 uint16_t get_version_info(uint8_t addr, char* const ver_str)
 {
     uint8_t res_body[32] = {0};
     int ret = 0;
 
     if (addr == BMC_ADDR) {
-        sprintf(ver_str, "BMC Version %d.%d.%d. Built on %s %s", MAIN_VERSION, SUB_VERSION, FIX_VERSION, __DATE__, __TIME__);
-        return strlen(ver_str);
+        sprintf(ver_str+3, "%s %s", __DATE__, __TIME__);
+        ver_str[0] = MAIN_VERSION;
+        ver_str[1] = SUB_VERSION;
+        ver_str[2] = FIX_VERSION;
+        return (3+strlen(ver_str+3));
     } else {
         ret = ipmi_request(addr, IPMI_MSG_CODE_GET_VERSION, NULL, 0, 2000, res_body);
         if (ret == IPMI_ERR_OK) {

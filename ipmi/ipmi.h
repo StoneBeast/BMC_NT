@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include "ipmi_sdr.h"
 
-#define MAIN_VERSION    0
-#define SUB_VERSION     1
-#define FIX_VERSION     0
+#define MAIN_VERSION    1
+#define SUB_VERSION     0
+#define FIX_VERSION     1
 
 #define BMC_ADDR                0x20
 #define IPMC_BASE_ADDR          0x40
