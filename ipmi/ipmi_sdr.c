@@ -3,7 +3,7 @@
  * @Date         : 2025-08-05 18:53:12
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2026-01-15 18:30:01
+ * @LastEditTime : 2026-01-16 13:48:38
  * @Description  : 
  */
 
@@ -73,7 +73,7 @@ void init_ipmi_sdr(void)
                     SENSOR_TYPE_VOLTAGE,
                     SENSOR_UNIT_CODE_V,
                     0, 0xFFFF, 0x4D9,
-                    get_channel_data, 1,
+                    get_battery_data, BATTERY_INX,
                     sdr_init_battery_pin, NULL,
                     16113, -7, "BAT_MON");
 
@@ -184,8 +184,6 @@ void update_sensor(void)
                 continue;
             } else {
                 battery_flag = 1;
-                /* close battery */
-                // close_battery_pin();
             }
         }
         data = sdr_list[i].sensor_read(sdr_list[i].read_arg);

@@ -1,3 +1,11 @@
+/*
+ * @Author       : stoneBeast
+ * @Date         : 2025-07-30 16:31:58
+ * @Encoding     : UTF-8
+ * @LastEditors  : stoneBeast
+ * @LastEditTime : 2026-01-16 15:31:12
+ * @Description  : 
+ */
 #ifndef __IPMI_H
 #define __IPMI_H
 
@@ -6,7 +14,7 @@
 
 #define MAIN_VERSION    1
 #define SUB_VERSION     0
-#define FIX_VERSION     1
+#define FIX_VERSION     2
 
 #define BMC_ADDR                0x20
 #define IPMC_BASE_ADDR          0x40

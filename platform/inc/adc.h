@@ -3,7 +3,7 @@
  * @Date         : 2025-08-11 13:54:04
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-08-11 14:21:58
+ * @LastEditTime : 2026-01-16 15:26:28
  * @Description  : 
  */
 
@@ -14,5 +14,6 @@
 
 void init_adc(void* arg);
 uint16_t get_channel_data(uint8_t ch);
+uint16_t get_battery_data(uint8_t n);
 
 #endif // !__ADC_H
