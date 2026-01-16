@@ -14,6 +14,7 @@ void init_gpio(void);
 void ledOn(void);
 void ledOff(void);
 void sdr_init_battery_pin(void *arg);
+void open_battery_pin(void);
 void close_battery_pin(void);
 void battert_warn(void);
 

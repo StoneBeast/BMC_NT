@@ -11,6 +11,7 @@ void init_adc(void* arg)
     GPIO_InitTypeDef GPIO_InitStructure;
     ADC_InitTypeDef ADC_InitStructure;
     DMA_InitTypeDef DMA_InitStructure;
+    NVIC_InitTypeDef NVIC_InitStructure;
 
     RCC_ADCCLKConfig(RCC_PCLK2_Div4);
 
@@ -45,6 +46,15 @@ void init_adc(void* arg)
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
     DMA_Init(DMA1_Channel1, &DMA_InitStructure);
 
+    /* 只在第一次转换完成后触发中断一次，之后关闭中断 */
+    DMA_ITConfig(DMA1_Channel1, DMA_IT_TC, ENABLE); // 开传输完成中断
+
+    NVIC_InitStructure.NVIC_IRQChannel                   = DMA1_Channel1_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
     /* Enable DMA1 channel1 */
     DMA_Cmd(DMA1_Channel1, ENABLE);
 
@@ -68,6 +78,9 @@ void init_adc(void* arg)
 
     /* Enable ADC1 */
     ADC_Cmd(ADC1, ENABLE);
+
+    // 暂时把开关加在这里
+    open_battery_pin();
 
     /* Enable ADC1 reset calibration register */
     ADC_ResetCalibration(ADC1);

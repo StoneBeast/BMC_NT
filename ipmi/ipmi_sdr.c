@@ -3,7 +3,7 @@
  * @Date         : 2025-08-05 18:53:12
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-10-22 14:25:54
+ * @LastEditTime : 2026-01-15 18:30:01
  * @Description  : 
  */
 
@@ -185,7 +185,7 @@ void update_sensor(void)
             } else {
                 battery_flag = 1;
                 /* close battery */
-                close_battery_pin();
+                // close_battery_pin();
             }
         }
         data = sdr_list[i].sensor_read(sdr_list[i].read_arg);

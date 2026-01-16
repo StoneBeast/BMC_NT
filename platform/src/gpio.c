@@ -3,7 +3,7 @@
  * @Date         : 2025-07-29 14:33:46
  * @Encoding     : UTF-8
  * @LastEditors  : stoneBeast
- * @LastEditTime : 2025-10-21 16:59:44
+ * @LastEditTime : 2026-01-15 18:17:53
  * @Description  : led、电池控制引脚等gpio初始化、控制函数定义
  */
 
@@ -43,7 +43,8 @@ static void init_battery_pin(void)
     GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2;
     GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-    GPIO_SetBits(GPIOB, GPIO_Pin_5);
+    // GPIO_SetBits(GPIOB, GPIO_Pin_5);
+    close_battery_pin();
     GPIO_SetBits(GPIOD, GPIO_Pin_2);
 }
 
@@ -51,6 +52,11 @@ void sdr_init_battery_pin(void* arg)
 {
     (void) arg;
     init_battery_pin();
+}
+
+void open_battery_pin(void)
+{
+    GPIO_SetBits(GPIOB, GPIO_Pin_5);
 }
 
 void close_battery_pin(void)

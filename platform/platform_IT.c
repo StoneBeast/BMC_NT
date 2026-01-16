@@ -227,3 +227,16 @@ void TIM6_IRQHandler(void)
         SystemTick++;
     }
 }
+
+void DMA1_Channel1_IRQHandler(void)
+{
+    if (DMA_GetITStatus(DMA1_IT_TC1)) // Transfer Complete
+    {
+        DMA_ClearITPendingBit(DMA1_IT_TC1); // 清中断标志
+
+        /* 关闭中断 */
+        DMA_ITConfig(DMA1_Channel1, DMA_IT_TC, DISABLE);
+
+        close_battery_pin();
+    }
+}
